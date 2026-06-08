@@ -1,10 +1,7 @@
 # Trainee Management API
 
 ## Technology Used
-.net, asp.net core, c#
-
-## Features Completed
-API - GET, PUT, POST, DELETE
+.net, asp.net core, c#, ef core
 
 ## How to Run
 Clone the repo.
@@ -18,8 +15,19 @@ open browser http://localhost:5158
 
 go to the "localhost:5158/swagger" to test all the implemented APIs
 
-## Challenges Faced
-It was difficult to build because of no prior knowledge about .net and asp.net
+## API List
 
-## Improvements Planned
-Going to implement datastorage in this one because now it uses in-memory list as a storage.
+GET /api/health
+
+GET /api/trainees
+GET /api/trainees?searchParam=""
+GET /api/trainees/{id}
+
+POST /api/trainees/
+
+PUT /api/trainees/
+
+DELETE /api/trainees/
+
+## Sample Request JSON
+

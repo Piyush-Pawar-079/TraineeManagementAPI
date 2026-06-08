@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Service;
 using traineeManagementAPI.DTO;
+using Microsoft.IdentityModel.Tokens;
 
 namespace traineeManagementAPI.Controller;
 
@@ -17,140 +18,70 @@ public class TraineeController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAllTrainees()
+    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam)
     {
-        var trainee = _traineeService.GetAllTrainees();
 
-        var response = trainee.Select(trainee => new TraineeResponseDTO
+        if (searchParam != null)
         {
-            Id = trainee.Id,
-            FirstName = trainee.FirstName,
-            LastName = trainee.LastName,
-            Email = trainee.Email,
-            TechStack = trainee.TechStack,
-            Status = trainee.Status,
-            CreateDate = trainee.CreatedDate,
-            UpdateDate = trainee.UpdatedDate
-        });
+            var searchResult = await _traineeService.Search(searchParam);
+            if (searchResult.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(searchResult);
+        }
 
-        return Ok(response);
-
+        var response = await _traineeService.GetAllTrainees();
+            if (response.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(response);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetTraineeById(int id)
+    public async Task<ActionResult<TraineeResponseDTO?>> GetTraineeById(int id)
     {
-        var trainee = _traineeService.GetTraineeById(id);
+        var trainee = await _traineeService.GetTraineeById(id);
 
         if (trainee == null)
         {
-            return NotFound("Trainee with desired Id is not found");
+            return NotFound($"Trainee with Id {id} not found");
         }
 
-        return Ok(new TraineeResponseDTO
-        {
-            Id = trainee.Id,
-            FirstName = trainee.FirstName,
-            LastName = trainee.LastName,
-            Email = trainee.Email,
-            TechStack = trainee.TechStack,
-            Status = trainee.Status,
-            CreateDate = trainee.CreatedDate,
-            UpdateDate = trainee.UpdatedDate
-        });
+        return Ok(trainee);
 
     }
 
     [HttpPut]
-    public IActionResult UpdateTrainee(int id, UpdateTraineeRequestDTO trainee)
+    public async Task<ActionResult<TraineeResponseDTO?>> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
-        var desiredTrainee = _traineeService.GetTraineeById(id);
+        var updatedTrainee = await _traineeService.UpdateTrainee(id, updateDto);
 
-        if (desiredTrainee == null)
+        if (updatedTrainee == null)
         {
-            return NotFound("Trainee with the specified id is not available");
+            return NotFound($"Trainee with Id {id} not found");
         }
 
-        if (trainee.FirstName != null)
-        {
-            desiredTrainee.FirstName = trainee.FirstName;
-        }
-
-        if (trainee.LastName != null)
-        {
-            desiredTrainee.LastName = trainee.LastName;
-        }
-
-        if (trainee.Email != null)
-        {
-            desiredTrainee.Email = trainee.Email;
-        }
-
-        if (trainee.TechStack != null)
-        {
-            desiredTrainee.TechStack = trainee.TechStack;
-        }
-
-        if (trainee.Status != null)
-        {
-            desiredTrainee.Status = trainee.Status;
-        }
-
-        desiredTrainee.UpdatedDate = DateTime.Now;
-
-        return Ok(new TraineeResponseDTO
-        {
-            Id = desiredTrainee.Id,
-            FirstName = desiredTrainee.FirstName,
-            LastName = desiredTrainee.LastName,
-            Email = desiredTrainee.Email,
-            TechStack = desiredTrainee.TechStack,
-            Status = desiredTrainee.Status,
-            CreateDate = desiredTrainee.CreatedDate,
-            UpdateDate = desiredTrainee.UpdatedDate
-        });
-
+        return Ok(updatedTrainee);
     }
 
     [HttpPost]
-    public IActionResult CreateTrainee(CreateTraineeRequestDTO trainee)
+    public async Task<ActionResult<TraineeResponseDTO>> CreateTrainee(CreateTraineeRequestDTO createDto)
     {
-        var newTrainee = new Trainee
-        {
-            FirstName = trainee.FirstName,
-            LastName = trainee.LastName,
-            Email = trainee.Email,
-            TechStack = trainee.TechStack,
-            Status = trainee.Status,
-        };
-
-        var createdTrainee = _traineeService.CreateTrainee(newTrainee);
-
-        return Ok(new TraineeResponseDTO
-        {
-            Id = createdTrainee.Id,
-            FirstName = createdTrainee.FirstName,
-            LastName = createdTrainee.LastName,
-            Email = createdTrainee.Email,
-            TechStack = createdTrainee.TechStack,
-            Status = createdTrainee.Status,
-            CreateDate = createdTrainee.CreatedDate,
-            UpdateDate = createdTrainee.UpdatedDate
-        });
-
+        return Ok(await _traineeService.CreateTrainee(createDto));
     }
 
     [HttpDelete]
-    public IActionResult DeleteTrainee(int id)
+    public async Task<IActionResult> DeleteTrainee(int id)
     {
-        var trainee = _traineeService.DeleteTrainee(id);
+        var deleteResult = await _traineeService.DeleteTrainee(id);
 
-        if (!trainee)
+        if (deleteResult == false)
         {
-            return NotFound("Trainee with desired Id is not found");
+            return NotFound($"Trainee with the Id {id} is not available");
         }
-
-        return NoContent();
+        return Ok();
 
     }
 

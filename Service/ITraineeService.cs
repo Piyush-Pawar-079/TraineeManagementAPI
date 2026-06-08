@@ -1,17 +1,20 @@
+using traineeManagementAPI.DTO;
 using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Service;
 
 public interface ITraineeService
 {
-    List<Trainee> GetAllTrainees();
+    Task<List<TraineeResponseDTO>> GetAllTrainees();
 
-    Trainee? GetTraineeById(int id);
+    Task<TraineeResponseDTO?> GetTraineeById(int id);
 
-    Trainee? UpdateTrainee(int id, Trainee trainee);
+    Task<TraineeResponseDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO trainee);
 
-    Trainee CreateTrainee(Trainee trainee);
+    Task<TraineeResponseDTO> CreateTrainee(CreateTraineeRequestDTO trainee);
 
-    bool DeleteTrainee(int id);
+    Task<bool> DeleteTrainee(int id);
+
+    Task<List<TraineeResponseDTO>> Search(String searchParam);
 
 }

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices;
 
 namespace traineeManagementAPI.DTO;
+
 
 public class UpdateTraineeRequestDTO
 {
@@ -12,7 +12,6 @@ public class UpdateTraineeRequestDTO
     [MaxLength(50)]
     public string? LastName { set; get; }
 
-    [MaxLength(50)]
     [EmailAddress(ErrorMessage = "Valid Email is required")]
     // Also add validation for email format.
     public string? Email { set; get; }
@@ -20,8 +19,7 @@ public class UpdateTraineeRequestDTO
 
     public string? TechStack { set; get; }
 
-    [MaxLength(50)]
-    // Add validation for valid status. 
+    [EnumDataType(typeof(Status), ErrorMessage = "Status can only be Active, Inactive or Completed")]
     public string? Status { set; get; } 
     
 }
