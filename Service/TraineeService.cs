@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories;
