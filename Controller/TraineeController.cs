@@ -61,7 +61,7 @@ public class TraineeController : ControllerBase
 
     }
 
-    [HttpPut]
+    [HttpPut("{id}")]
     public async Task<ActionResult<TraineeResponseDTO?>> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
         var updatedTrainee = await _traineeService.UpdateTrainee(id, updateDto);
@@ -80,7 +80,7 @@ public class TraineeController : ControllerBase
         return Ok(await _traineeService.CreateTrainee(createDto));
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTrainee(int id)
     {
         var deleteResult = await _traineeService.DeleteTrainee(id);
