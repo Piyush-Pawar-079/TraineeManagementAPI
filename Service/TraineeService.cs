@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic;
 using traineeManagementAPI.DTO;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories;
@@ -15,11 +16,9 @@ public class TraineeService : ITraineeService
 
     private static int _nextId = 0;
 
-    public async Task<List<TraineeResponseDTO>> GetAllTrainees()
+    private TraineeResponseDTO MapToDTO(Trainee trainee)
     {
-        var trainee = await _repository.GetAllAsync();
-
-        return trainee.Select(trainee => new TraineeResponseDTO
+        return new TraineeResponseDTO
         {
             Id = trainee.Id,
             FirstName = trainee.FirstName,
@@ -29,7 +28,14 @@ public class TraineeService : ITraineeService
             Status = trainee.Status,
             CreateDate = trainee.CreatedDate,
             UpdateDate = trainee.UpdatedDate
-        }).ToList();
+        };
+    }
+
+    public async Task<List<TraineeResponseDTO>> GetAllTrainees()
+    {
+        var trainee = await _repository.GetAllAsync();
+
+        return trainee.Select(MapToDTO).ToList();
         
     }
 
@@ -42,17 +48,7 @@ public class TraineeService : ITraineeService
             return null;
         }
 
-        return new TraineeResponseDTO
-        {
-            Id = trainee.Id,
-            FirstName = trainee.FirstName,
-            LastName = trainee.LastName,
-            Email = trainee.Email,
-            TechStack = trainee.TechStack,
-            Status = trainee.Status,
-            CreateDate = trainee.CreatedDate,
-            UpdateDate = trainee.UpdatedDate
-        };
+        return MapToDTO(trainee);
 
     }
 
@@ -88,17 +84,7 @@ public class TraineeService : ITraineeService
         if(desiredTrainee == null)
             return null;
 
-        return new TraineeResponseDTO
-        {
-            Id = desiredTrainee.Id,
-            FirstName = desiredTrainee.FirstName,
-            LastName = desiredTrainee.LastName,
-            Email = desiredTrainee.Email,
-            TechStack = desiredTrainee.TechStack,
-            Status = desiredTrainee.Status,
-            CreateDate = desiredTrainee.CreatedDate,
-            UpdateDate = desiredTrainee.UpdatedDate
-        };
+        return MapToDTO(desiredTrainee);
 
     }
 
@@ -117,21 +103,11 @@ public class TraineeService : ITraineeService
             UpdatedDate = DateTime.Now
         };
 
+        _nextId++;
 
         var createdTrainee = await _repository.CreateAsync(newTrainee);
 
-        return new TraineeResponseDTO
-        {
-            Id = createdTrainee.Id,
-            FirstName = createdTrainee.FirstName,
-            LastName = createdTrainee.LastName,
-            Email = createdTrainee.Email,
-            TechStack = createdTrainee.TechStack,
-            Status = createdTrainee.Status,
-            CreateDate = createdTrainee.CreatedDate,
-            UpdateDate = createdTrainee.UpdatedDate
-        };
-
+        return MapToDTO(createdTrainee);
     }
 
     public async Task<bool> DeleteTrainee(int id)
@@ -145,24 +121,39 @@ public class TraineeService : ITraineeService
 
         var desiredTrainee = trainees.Where(
             t => 
-            t.FirstName.Contains(searchParam) ||
-            t.LastName.Contains(searchParam) ||
-            t.Email.Contains(searchParam) ||
-            t.TechStack.Contains(searchParam)
-        ).ToList();
+            t.FirstName.IndexOf(searchParam, StringComparison.OrdinalIgnoreCase) >= 0 || 
+            t.LastName.IndexOf(searchParam, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            t.Email.IndexOf(searchParam, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            t.TechStack.IndexOf(searchParam, StringComparison.OrdinalIgnoreCase) >= 0 
+        );
 
-        return desiredTrainee.Select(t => new TraineeResponseDTO
-        {
-            Id = t.Id,
-            FirstName = t.FirstName,
-            LastName = t.LastName,
-            Email = t.Email,
-            TechStack = t.TechStack,
-            Status = t.Status,
-            CreateDate = t.CreatedDate,
-            UpdateDate = t.UpdatedDate
-        }).ToList();
-
+        return desiredTrainee.Select(MapToDTO).ToList();
     }
 
+    public async Task<List<TraineeResponseDTO>> Sort(string sortParam)
+    {
+
+        var trainees = await _repository.GetAllAsync();
+        
+        if (Equals(sortParam, "firstname"))
+        {
+            return trainees.OrderBy(t => t.FirstName).Select(MapToDTO).ToList();
+        }
+        else if (Equals(sortParam, "lastname"))
+        {
+            return trainees.OrderBy(t => t.LastName).Select(MapToDTO).ToList();
+        }
+        else if (Equals(sortParam, "email"))
+        {
+            return trainees.OrderBy(t => t.Email).Select(MapToDTO).ToList();
+        }
+        else if (Equals(sortParam, "techstack"))
+        {
+            return trainees.OrderBy(t => t.TechStack).Select(MapToDTO).ToList();
+        }
+        else
+        {
+            return trainees.OrderBy(t => t.Status).Select(MapToDTO).ToList();
+        }
+    }
 }

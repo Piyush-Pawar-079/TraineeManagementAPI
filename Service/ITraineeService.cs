@@ -17,4 +17,6 @@ public interface ITraineeService
 
     Task<List<TraineeResponseDTO>> Search(String searchParam);
 
+    Task<List<TraineeResponseDTO>> Sort(String sortParam);
+
 }

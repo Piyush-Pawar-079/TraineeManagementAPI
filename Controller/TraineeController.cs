@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using traineeManagementAPI.Model;
 using traineeManagementAPI.Service;
 using traineeManagementAPI.DTO;
-using Microsoft.IdentityModel.Tokens;
 
 namespace traineeManagementAPI.Controller;
 
@@ -18,8 +16,18 @@ public class TraineeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam)
+    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam, String? sortParam)
     {
+
+        if (sortParam != null)
+        {
+            var sortedResult = await _traineeService.Sort(sortParam);
+            if (sortedResult.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(sortedResult);
+        }
 
         if (searchParam != null)
         {
