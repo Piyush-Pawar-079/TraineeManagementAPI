@@ -9,8 +9,11 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITraineeService, TraineeService>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+ 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
-    options.UseInMemoryDatabase("TraineeDB"));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddScoped<ITraineeRepository, TraineeRepository>();
 
