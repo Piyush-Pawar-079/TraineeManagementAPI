@@ -96,3 +96,16 @@ Sample PUT /api/trainees/{id} response:
 ## Known Limitations
 - No Authentication implemented.
 - No real database used in the project, still using in-memory database.
+
+## Database Setup Steps
+
+- First import required packages and make sure all the packages are of the same version so that we do not get any version mismatch error.
+- Update the Program.cs file for using the MySql database instead of In-memory datase.
+- In appsettings.json add another entry for Connection string like this: 
+  "ConnectionStrings": {
+    "DefaultConnection": "server=localhost;port=3306;database=trainee_management_db;user=root;password=root;"
+  },
+- Run dotnet build to make sure there are no errors.
+- Run the migration command => dotnet ef migrations add InitialCreate
+- Once the migration is completed run this command to make tables in the database => dotnet ef database update
+- Once ran successfully, the code and the database are in sync. We can test the connection by using swagger UI, try adding one entry using POST end point and see if it is shown in the datase or not.
