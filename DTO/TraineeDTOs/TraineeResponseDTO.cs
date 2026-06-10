@@ -1,4 +1,4 @@
-namespace traineeManagementAPI.DTO;
+namespace traineeManagementAPI.DTO.TraineeDTOs;
 
 public class TraineeResponseDTO
 {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace traineeManagementAPI.DTO;
+namespace traineeManagementAPI.DTO.TraineeDTOs;
 
 
 public class UpdateTraineeRequestDTO

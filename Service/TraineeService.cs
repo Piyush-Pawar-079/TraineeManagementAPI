@@ -1,5 +1,5 @@
 using Microsoft.VisualBasic;
-using traineeManagementAPI.DTO;
+using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories;
 using traineeManagementAPI.Helpers;
@@ -8,6 +8,16 @@ namespace traineeManagementAPI.Service;
 
 public class TraineeService : ITraineeService
 {
+
+    private class SortFields
+    {
+        public const String FirstName = "Firstname";
+        public const String LastName = "Lastname";
+        public const String Email = "Email";
+        public const String TechStack = "TechStack";
+        public const String Status = "Status";
+    }
+
     private readonly ITraineeRepository _repository;
 
     public TraineeService(ITraineeRepository repository)
@@ -131,31 +141,25 @@ public class TraineeService : ITraineeService
         return desiredTrainee.Select(MapToDTO).ToList();
     }
 
-    public async Task<List<TraineeResponseDTO>> Sort(string sortParam)
+    public async Task<List<TraineeResponseDTO>> Sort(string sortParam, bool ascending)
     {
 
         var trainees = await _repository.GetAllAsync();
         
-        if (Equals(sortParam, "firstname"))
-        {
-            return trainees.OrderBy(t => t.FirstName).Select(MapToDTO).ToList();
-        }
-        else if (Equals(sortParam, "lastname"))
-        {
-            return trainees.OrderBy(t => t.LastName).Select(MapToDTO).ToList();
-        }
-        else if (Equals(sortParam, "email"))
-        {
-            return trainees.OrderBy(t => t.Email).Select(MapToDTO).ToList();
-        }
-        else if (Equals(sortParam, "techstack"))
-        {
-            return trainees.OrderBy(t => t.TechStack).Select(MapToDTO).ToList();
-        }
+        IEnumerable<Trainee> sorted;
+
+        if (Equals(sortParam, SortFields.FirstName))
+            sorted = ascending ? trainees.OrderBy(t => t.FirstName) : trainees.OrderByDescending(t => t.FirstName); 
+        else if (Equals(sortParam, SortFields.LastName))
+            sorted = ascending ? trainees.OrderBy(t => t.LastName) : trainees.OrderByDescending(t => t.LastName); 
+        else if (Equals(sortParam, SortFields.Email))
+            sorted = ascending ? trainees.OrderBy(t => t.Email) : trainees.OrderByDescending(t => t.Email); 
+        else if (Equals(sortParam, SortFields.TechStack))
+            sorted = ascending ? trainees.OrderBy(t => t.TechStack) : trainees.OrderByDescending(t => t.TechStack); 
         else
-        {
-            return trainees.OrderBy(t => t.Status).Select(MapToDTO).ToList();
-        }
+            sorted = ascending ? trainees.OrderBy(t => t.Status) : trainees.OrderByDescending(t => t.Status); 
+    
+        return sorted.Select(MapToDTO).ToList();
     }
 
     public async Task<List<TraineeResponseDTO>> GetTraineeUsingPagination(PaginationParams paginationParams)

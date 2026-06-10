@@ -1,4 +1,4 @@
-using traineeManagementAPI.DTO;
+using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Helpers;
 
@@ -18,7 +18,7 @@ public interface ITraineeService
 
     Task<List<TraineeResponseDTO>> Search(String searchParam);
 
-    Task<List<TraineeResponseDTO>> Sort(String sortParam);
+    Task<List<TraineeResponseDTO>> Sort(String sortParam, bool ascending);
 
     Task<List<TraineeResponseDTO>> GetTraineeUsingPagination(PaginationParams paginationParams);
 

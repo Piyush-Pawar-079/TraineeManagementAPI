@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.Service;
-using traineeManagementAPI.DTO;
+using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Helpers;
-using traineeManagementAPI.Repositories;
-using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Controller;
 
@@ -19,7 +17,7 @@ public class TraineeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam, String? statusFilter, String? sortParam, [FromQuery] PaginationParams paginationParams)
+    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam, String? statusFilter, String? sortParam, bool? ascending, [FromQuery] PaginationParams paginationParams)
     {
         // var finalResponse = new List<Trainee>();
 
@@ -37,15 +35,15 @@ public class TraineeController : ControllerBase
             // finalResponse = paginatedResponse;
         }
 
-        // if (sortParam != null)
-        // {
-        //     var sortedResult = await _traineeService.Sort(sortParam, finalResponse);
-        //     if (sortedResult.Count == 0)
-        //     {
-        //         return NotFound();
-        //     }
-        //     return Ok(sortedResult);
-        // }
+        if (sortParam != null)
+        {
+            var sortedResult = await _traineeService.Sort(sortParam, ascending != false);
+            if (sortedResult.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(sortedResult);
+        }
 
         if (searchParam != null)
         {

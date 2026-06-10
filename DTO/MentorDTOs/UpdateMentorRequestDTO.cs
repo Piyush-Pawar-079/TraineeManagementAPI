@@ -1,0 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace traineeManagementAPI.DTO.MentorDTOs;
+
+public class UpdateMentorRequestDTO
+{
+    public string? FirstName { set; get; }
+    public string? LastName { set; get; }
+
+    [EmailAddress(ErrorMessage = "Valid Email is required")]
+    public string? Email { set; get; }
+
+    public string? Expertise { set; get; }
+
+    [EnumDataType(typeof(MentorStatus), ErrorMessage = "Status can only be Active or Inactive")]
+    public string? Status { set; get; }
+}

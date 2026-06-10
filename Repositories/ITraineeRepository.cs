@@ -1,5 +1,4 @@
 
-using traineeManagementAPI.DTO;
 using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
 
