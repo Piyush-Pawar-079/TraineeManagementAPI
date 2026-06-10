@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.Data;
+using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Repositories;
@@ -54,6 +55,19 @@ public class TraineeRepository : ITraineeRepository
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<PagedResponse<Trainee>> PaginatedResponse(PaginationParams paginationParams)
+    {
+        var query = _context.Trainees.AsQueryable();
+        var totalRecords = await query.CountAsync();
+        var items = await query.Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                                .Take(paginationParams.PageSize)
+                                .ToListAsync();
+ 
+        var pagedResponse = new PagedResponse<Trainee>(items, paginationParams.PageNumber, paginationParams.PageSize, totalRecords);
+ 
+        return pagedResponse;
     }
 
 }

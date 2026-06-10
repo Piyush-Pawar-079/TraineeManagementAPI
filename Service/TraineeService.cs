@@ -2,6 +2,7 @@ using Microsoft.VisualBasic;
 using traineeManagementAPI.DTO;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories;
+using traineeManagementAPI.Helpers;
 
 namespace traineeManagementAPI.Service;
 
@@ -156,4 +157,14 @@ public class TraineeService : ITraineeService
             return trainees.OrderBy(t => t.Status).Select(MapToDTO).ToList();
         }
     }
+
+    public async Task<List<TraineeResponseDTO>> GetTraineeUsingPagination(PaginationParams paginationParams)
+    {
+        var paginatedResponse = await _repository.PaginatedResponse(paginationParams);
+
+        return paginatedResponse.Data.Select(MapToDTO).ToList();
+
+    }
+
+
 }

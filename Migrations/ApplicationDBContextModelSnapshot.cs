@@ -89,11 +89,26 @@ namespace traineeManagementAPI.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedDate = new DateTime(2026, 6, 10, 7, 15, 39, 11, DateTimeKind.Local).AddTicks(608),
+                            Email = "admin@gmail.com",
+                            PasswordHash = "admin@12345",
+                            Role = "Admin",
+                            UpdatedDate = new DateTime(2026, 6, 10, 7, 15, 39, 11, DateTimeKind.Local).AddTicks(837),
+                            Username = "Admin"
+                        });
                 });
 #pragma warning restore 612, 618
         }

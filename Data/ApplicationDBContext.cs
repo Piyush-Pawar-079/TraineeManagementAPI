@@ -15,4 +15,14 @@ public class ApplicationDBContext : DbContext
 
     public DbSet<User> Users {set; get;}
 
+     protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Seed initial data
+        modelBuilder.Entity<User>().HasData(
+            new User { Id = 1, Username = "Admin", Email = "admin@gmail.com", PasswordHash = "admin@12345", Role = "Admin", CreatedDate = DateTime.Now, UpdatedDate = DateTime.Now }
+        );
+    }
+
 }

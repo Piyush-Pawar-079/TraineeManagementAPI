@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.Service;
 using traineeManagementAPI.DTO;
+using traineeManagementAPI.Helpers;
+using traineeManagementAPI.Repositories;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Controller;
 
@@ -16,35 +19,73 @@ public class TraineeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam, String? sortParam)
+    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees(String? searchParam, String? statusFilter, String? sortParam, [FromQuery] PaginationParams paginationParams)
     {
+        // var finalResponse = new List<Trainee>();
 
-        if (sortParam != null)
+        if (paginationParams != null)
         {
-            var sortedResult = await _traineeService.Sort(sortParam);
-            if (sortedResult.Count == 0)
+            var paginatedResponse = await _traineeService.GetTraineeUsingPagination(paginationParams);
+            if (paginatedResponse.Count == 0)
             {
                 return NotFound();
             }
-            return Ok(sortedResult);
+            if (searchParam == null && statusFilter == null)
+            {
+                return Ok(paginatedResponse);
+            }
+            // finalResponse = paginatedResponse;
         }
+
+        // if (sortParam != null)
+        // {
+        //     var sortedResult = await _traineeService.Sort(sortParam, finalResponse);
+        //     if (sortedResult.Count == 0)
+        //     {
+        //         return NotFound();
+        //     }
+        //     return Ok(sortedResult);
+        // }
 
         if (searchParam != null)
         {
+            // var searchResult = await _traineeService.Search(searchParam, finalResponse);
             var searchResult = await _traineeService.Search(searchParam);
             if (searchResult.Count == 0)
             {
                 return NotFound();
             }
-            return Ok(searchResult);
+            
+            if(statusFilter == null)
+                return Ok(searchResult);
+
+            // finalResponse = searchResult;
         }
 
-        var response = await _traineeService.GetAllTrainees();
-            if (response.Count == 0)
-            {
-                return NotFound();
-            }
-            return Ok(response);
+        // if (statusFilter != null)   
+        // {
+        //     // var searchResult = await _traineeService.filterByStatus(searchParam, finalResponse);
+        //     var searchResult = await _traineeService.filterByStatus
+        //     if (searchResult.Count == 0)
+        //     {
+        //         return NotFound();
+        //     }
+            
+        //     if(statusFilter == null)
+        //         return Ok(searchResult);
+
+        //     finalResponse = searchResult;
+        // }
+
+        // if(searchParam == null && statusFilter == null && paginationParams != null)
+        //     finalResponse = await _traineeService.GetAllTrainees();
+        
+        // if (finalResponse.Count == 0)
+        // {
+        //     return NotFound();
+        // }
+        // return Ok(finalResponse);
+        return await _traineeService.GetAllTrainees();
     }
 
     [HttpGet("{id}")]

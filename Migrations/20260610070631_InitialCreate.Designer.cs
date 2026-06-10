@@ -12,8 +12,8 @@ using traineeManagementAPI.Data;
 namespace traineeManagementAPI.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260610063354_UserTabelCreation")]
-    partial class UserTabelCreation
+    [Migration("20260610070631_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -97,6 +97,18 @@ namespace traineeManagementAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedDate = new DateTime(2026, 6, 10, 7, 6, 31, 419, DateTimeKind.Local).AddTicks(1874),
+                            Email = "admin@gmail.com",
+                            PasswordHash = "admin@12345",
+                            Role = "Admin",
+                            UpdatedDate = new DateTime(2026, 6, 10, 7, 6, 31, 419, DateTimeKind.Local).AddTicks(2078),
+                            Username = "Admin"
+                        });
                 });
 #pragma warning restore 612, 618
         }

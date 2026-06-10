@@ -12,8 +12,8 @@ using traineeManagementAPI.Data;
 namespace traineeManagementAPI.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260609134126_InitailCreate")]
-    partial class InitailCreate
+    [Migration("20260610071539_UsernameUnique")]
+    partial class UsernameUnique
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,6 +62,56 @@ namespace traineeManagementAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Trainees");
+                });
+
+            modelBuilder.Entity("traineeManagementAPI.Model.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedDate = new DateTime(2026, 6, 10, 7, 15, 39, 11, DateTimeKind.Local).AddTicks(608),
+                            Email = "admin@gmail.com",
+                            PasswordHash = "admin@12345",
+                            Role = "Admin",
+                            UpdatedDate = new DateTime(2026, 6, 10, 7, 15, 39, 11, DateTimeKind.Local).AddTicks(837),
+                            Username = "Admin"
+                        });
                 });
 #pragma warning restore 612, 618
         }

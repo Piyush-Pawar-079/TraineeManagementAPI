@@ -1,5 +1,6 @@
 
 using traineeManagementAPI.DTO;
+using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Repositories;
@@ -17,5 +18,7 @@ public interface ITraineeRepository
     Task<bool> DeleteAsync(int id);
 
     Task SaveChangesAsync(); 
+
+    Task<PagedResponse<Trainee>> PaginatedResponse(PaginationParams paginationParams);
 
 }

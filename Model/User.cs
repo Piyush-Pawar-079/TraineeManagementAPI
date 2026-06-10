@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace traineeManagementAPI.Model;
 
+[Index(nameof(Username), IsUnique = true)]
 public class User
 {
     public int Id { get; set; } // auto-generated
