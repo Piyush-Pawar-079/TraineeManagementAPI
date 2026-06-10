@@ -13,4 +13,6 @@ public class ApplicationDBContext : DbContext
 
     public DbSet<Trainee> Trainees { set; get; }
 
+    public DbSet<User> Users {set; get;}
+
 }
