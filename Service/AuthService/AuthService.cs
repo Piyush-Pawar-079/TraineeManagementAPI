@@ -1,4 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using traineeManagementAPI.DTO.AuthDTOs;
 using traineeManagementAPI.DTO.UserDTOs;
 using traineeManagementAPI.Model;
@@ -6,7 +10,7 @@ using traineeManagementAPI.Repositories.UserRepository;
 
 namespace traineeManagementAPI.Service.AuthService;
 
-public class AuthService(IUserRepository repository) : IAuthService
+public class AuthService(IUserRepository repository, IConfiguration configuration) : IAuthService
 {
 
     private static int _nextId = 0;
@@ -83,7 +87,7 @@ public class AuthService(IUserRepository repository) : IAuthService
             return null;
         }
 
-        String token = "Something";
+        String token = GenerateToken(userRequestDTO);
 
         return new LoginResponseDTO
         {
@@ -91,6 +95,32 @@ public class AuthService(IUserRepository repository) : IAuthService
             ExpiresIn = DateTime.UtcNow.AddMinutes(60),
             User = MapToUserResponseDTO(found)
         };
+    }
+
+    private String GenerateToken(CreateUserRequestDTO userRequestDTO)
+    {
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, userRequestDTO.Username),
+            new Claim(ClaimTypes.Email, userRequestDTO.Email),
+            new Claim(ClaimTypes.Role, userRequestDTO.Role)
+        };
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:Token")!)
+        );
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+        var tokenDescriptor = new JwtSecurityToken(
+            issuer: configuration.GetValue<string>("AppSettings:Issuer"),
+            audience: configuration.GetValue<string>("AppSettings:Audience"),
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(60),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
     }
 
