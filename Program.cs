@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.Data;
 using traineeManagementAPI.Repositories.TraineeRepository;
@@ -24,6 +25,14 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
+builder.Services.AddControllers()
+   .AddJsonOptions(options =>
+   {
+      options.JsonSerializerOptions.Converters.Add(
+         new JsonStringEnumConverter()
+      );
+   });
+
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITraineeService, TraineeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -36,6 +45,8 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 builder.Services.AddScoped<ITraineeRepository, TraineeRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,5 +1,3 @@
-
-
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.Data;
 using traineeManagementAPI.Helpers;
@@ -7,14 +5,9 @@ using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Repositories.TraineeRepository;
 
-public class TraineeRepository : ITraineeRepository
+public class TraineeRepository(ApplicationDBContext context) : ITraineeRepository
 {
-    private readonly ApplicationDBContext _context;
-
-    public TraineeRepository(ApplicationDBContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDBContext _context = context;
 
     public async Task<List<Trainee>> GetAllAsync()
     {
@@ -57,13 +50,15 @@ public class TraineeRepository : ITraineeRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<PagedResponse<Trainee>> PaginatedResponse(PaginationParams paginationParams)
+    public async Task<PagedResponse<Trainee>> PaginatedResponse(PaginationParams paginationParams, List<Trainee> trainees)
     {
-        var query = _context.Trainees.AsQueryable();
-        var totalRecords = await query.CountAsync();
-        var items = await query.Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+        // var query = _context.Trainees.AsQueryable();
+        // var query = trainees.AsQueryable();
+        var query = trainees;
+        var totalRecords = query.Count;
+        var items = query.Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
                                 .Take(paginationParams.PageSize)
-                                .ToListAsync();
+                                .ToList();
  
         var pagedResponse = new PagedResponse<Trainee>(items, paginationParams.PageNumber, paginationParams.PageSize, totalRecords);
  

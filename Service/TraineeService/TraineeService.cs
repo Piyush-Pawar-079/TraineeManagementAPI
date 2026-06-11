@@ -2,10 +2,11 @@ using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Repositories.TraineeRepository;
 using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
+using traineeManagementAPI.DTO.HelperDTOs;
 
 namespace traineeManagementAPI.Service.TraineeService;
 
-public class TraineeService(ITraineeRepository repository) : ITraineeService
+public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger) : ITraineeService
 {
 
     private class SortFields
@@ -18,6 +19,7 @@ public class TraineeService(ITraineeRepository repository) : ITraineeService
     }
 
     private readonly ITraineeRepository _repository = repository;
+    private readonly ILogger<TraineeService> _logger = logger;
     private static int _nextId = 0;
 
     private TraineeResponseDTO MapToDTO(Trainee trainee)
@@ -88,6 +90,7 @@ public class TraineeService(ITraineeRepository repository) : ITraineeService
         if(desiredTrainee == null)
             return null;
 
+        _logger.LogInformation("Trainee Updated Successfully");
         return MapToDTO(desiredTrainee);
 
     }
@@ -111,17 +114,19 @@ public class TraineeService(ITraineeRepository repository) : ITraineeService
 
         var createdTrainee = await _repository.CreateAsync(newTrainee);
 
+        _logger.LogInformation("Trainee Created Successfully");
         return MapToDTO(createdTrainee);
     }
 
     public async Task<bool> DeleteTrainee(int id)
     {
+        _logger.LogInformation("Trainee Deleted Successfully");
         return await _repository.DeleteAsync(id);
     }
 
-    public async Task<List<TraineeResponseDTO>> Search(String searchParam)
+    private static async Task<List<Trainee>> Search(String searchParam, List<Trainee> trainees)
     {
-        var trainees = await _repository.GetAllAsync();
+        // var trainees = await _repository.GetAllAsync();
 
         var desiredTrainee = trainees.Where(
             t => 
@@ -131,13 +136,13 @@ public class TraineeService(ITraineeRepository repository) : ITraineeService
             t.TechStack.IndexOf(searchParam, StringComparison.OrdinalIgnoreCase) >= 0 
         );
 
-        return desiredTrainee.Select(MapToDTO).ToList();
+        return desiredTrainee.ToList();
     }
 
-    public async Task<List<TraineeResponseDTO>> Sort(string sortParam, bool ascending)
+    private static async Task<List<Trainee>> Sort(string sortParam, bool ascending, List<Trainee> trainees)
     {
 
-        var trainees = await _repository.GetAllAsync();
+        // var trainees = await _repository.GetAllAsync();
         
         IEnumerable<Trainee> sorted;
 
@@ -152,14 +157,41 @@ public class TraineeService(ITraineeRepository repository) : ITraineeService
         else
             sorted = ascending ? trainees.OrderBy(t => t.Status) : trainees.OrderByDescending(t => t.Status); 
     
-        return sorted.Select(MapToDTO).ToList();
+        return sorted.ToList();
     }
 
-    public async Task<List<TraineeResponseDTO>> GetTraineeUsingPagination(PaginationParams paginationParams)
+    private async Task<List<Trainee>> GetTraineeUsingPagination(PaginationParams paginationParams, List<Trainee> trainees)
     {
-        var paginatedResponse = await _repository.PaginatedResponse(paginationParams);
+        var paginatedResponse = await _repository.PaginatedResponse(paginationParams, trainees);
 
-        return paginatedResponse.Data.Select(MapToDTO).ToList();
+        return paginatedResponse.Data.ToList();
+    }
+
+    public async Task<List<TraineeResponseDTO>> GetAllAsyncWithFilters(FilterDTO filters, PaginationParams paginationParams)
+    {
+        var allTrainees = await _repository.GetAllAsync();
+
+        if (filters.SearchParam != null)
+        {
+            allTrainees = await Search(filters.SearchParam, allTrainees);
+        }
+
+        if (filters.StatusFilter != null)
+        {
+            allTrainees = allTrainees.Where(t => String.Equals(t.Status.ToString(), filters.StatusFilter.ToString())).ToList();
+        }
+
+        if(filters.SortParam != null)
+        {
+            allTrainees = await Sort(filters.SortParam, filters.Ascending != false, allTrainees);
+        }
+
+        if (paginationParams != null)
+        {
+            allTrainees = await GetTraineeUsingPagination(paginationParams, allTrainees);
+        }
+
+        return allTrainees.Select(MapToDTO).ToList();
 
     }
 

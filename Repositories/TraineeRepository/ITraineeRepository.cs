@@ -18,6 +18,6 @@ public interface ITraineeRepository
 
     Task SaveChangesAsync(); 
 
-    Task<PagedResponse<Trainee>> PaginatedResponse(PaginationParams paginationParams);
+    Task<PagedResponse<Trainee>> PaginatedResponse(PaginationParams paginationParams, List<Trainee> trainees);
 
 }

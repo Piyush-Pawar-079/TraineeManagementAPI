@@ -1,6 +1,7 @@
 using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Helpers;
+using traineeManagementAPI.DTO.HelperDTOs;
 
 namespace traineeManagementAPI.Service.TraineeService;
 
@@ -15,11 +16,6 @@ public interface ITraineeService
     Task<TraineeResponseDTO> CreateTrainee(CreateTraineeRequestDTO trainee);
 
     Task<bool> DeleteTrainee(int id);
-
-    Task<List<TraineeResponseDTO>> Search(String searchParam);
-
-    Task<List<TraineeResponseDTO>> Sort(String sortParam, bool ascending);
-
-    Task<List<TraineeResponseDTO>> GetTraineeUsingPagination(PaginationParams paginationParams);
+    public Task<List<TraineeResponseDTO>> GetAllAsyncWithFilters(FilterDTO filters, PaginationParams paginationParams);
 
 }
