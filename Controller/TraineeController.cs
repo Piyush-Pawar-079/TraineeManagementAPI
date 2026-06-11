@@ -17,7 +17,6 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     [HttpGet]
     public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees([FromQuery] FilterDTO filters, [FromQuery]PaginationParams paginationParams)
     {
-        
         return await _traineeService.GetAllAsyncWithFilters(filters, paginationParams);
     }
 

@@ -15,6 +15,8 @@ public class ApplicationDBContext : DbContext
 
     public DbSet<User> Users {set; get;}
 
+    public DbSet<Mentor> Mentors { set; get; }
+
      protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
