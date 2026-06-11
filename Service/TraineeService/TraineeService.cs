@@ -1,12 +1,11 @@
-using Microsoft.VisualBasic;
 using traineeManagementAPI.DTO.TraineeDTOs;
-using traineeManagementAPI.Model;
-using traineeManagementAPI.Repositories;
+using traineeManagementAPI.Repositories.TraineeRepository;
 using traineeManagementAPI.Helpers;
+using traineeManagementAPI.Model;
 
-namespace traineeManagementAPI.Service;
+namespace traineeManagementAPI.Service.TraineeService;
 
-public class TraineeService : ITraineeService
+public class TraineeService(ITraineeRepository repository) : ITraineeService
 {
 
     private class SortFields
@@ -18,13 +17,7 @@ public class TraineeService : ITraineeService
         public const String Status = "Status";
     }
 
-    private readonly ITraineeRepository _repository;
-
-    public TraineeService(ITraineeRepository repository)
-    {
-        _repository = repository;
-    }
-
+    private readonly ITraineeRepository _repository = repository;
     private static int _nextId = 0;
 
     private TraineeResponseDTO MapToDTO(Trainee trainee)

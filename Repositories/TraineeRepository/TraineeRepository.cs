@@ -5,7 +5,7 @@ using traineeManagementAPI.Data;
 using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
 
-namespace traineeManagementAPI.Repositories;
+namespace traineeManagementAPI.Repositories.TraineeRepository;
 
 public class TraineeRepository : ITraineeRepository
 {

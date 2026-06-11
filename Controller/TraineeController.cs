@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using traineeManagementAPI.Service;
+using traineeManagementAPI.Service.TraineeService;
 using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Helpers;
 

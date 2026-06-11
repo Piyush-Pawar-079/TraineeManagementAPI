@@ -2,7 +2,7 @@
 using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
 
-namespace traineeManagementAPI.Repositories;
+namespace traineeManagementAPI.Repositories.TraineeRepository;
 
 public interface ITraineeRepository
 {

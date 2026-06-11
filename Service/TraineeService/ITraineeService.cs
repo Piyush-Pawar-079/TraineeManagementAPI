@@ -2,7 +2,7 @@ using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Helpers;
 
-namespace traineeManagementAPI.Service;
+namespace traineeManagementAPI.Service.TraineeService;
 
 public interface ITraineeService
 {
