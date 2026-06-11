@@ -22,6 +22,44 @@ namespace traineeManagementAPI.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("traineeManagementAPI.Model.Mentor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Expertise")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Mentors");
+                });
+
             modelBuilder.Entity("traineeManagementAPI.Model.Trainee", b =>
                 {
                     b.Property<int>("Id")
@@ -45,9 +83,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("TechStack")
                         .IsRequired()
@@ -80,9 +117,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime(6)");
@@ -102,11 +138,11 @@ namespace traineeManagementAPI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedDate = new DateTime(2026, 6, 10, 7, 15, 39, 11, DateTimeKind.Local).AddTicks(608),
+                            CreatedDate = new DateTime(2026, 6, 11, 13, 25, 41, 397, DateTimeKind.Local).AddTicks(1807),
                             Email = "admin@gmail.com",
                             PasswordHash = "admin@12345",
-                            Role = "Admin",
-                            UpdatedDate = new DateTime(2026, 6, 10, 7, 15, 39, 11, DateTimeKind.Local).AddTicks(837),
+                            Role = 0,
+                            UpdatedDate = new DateTime(2026, 6, 11, 13, 25, 41, 397, DateTimeKind.Local).AddTicks(1992),
                             Username = "Admin"
                         });
                 });

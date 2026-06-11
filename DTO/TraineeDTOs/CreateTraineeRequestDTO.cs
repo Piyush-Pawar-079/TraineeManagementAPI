@@ -28,6 +28,6 @@ public class CreateTraineeRequestDTO
 
     [Required]
     [EnumDataType(typeof(Status), ErrorMessage = "Status can only be Active, Inactive or Completed")]
-    public string Status { set; get; } = string.Empty;
+    public Status Status { set; get; }
 
 }

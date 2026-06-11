@@ -2,7 +2,7 @@ using traineeManagementAPI.DTO.MentorDTOs;
 
 namespace traineeManagementAPI.Service.MentorService;
 
-interface IMentorService
+public interface IMentorService
 {
     Task<List<MentorResponseDTO>> GetAllAsync();
 

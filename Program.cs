@@ -1,9 +1,11 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.Data;
+using traineeManagementAPI.Repositories.MentorRepository;
 using traineeManagementAPI.Repositories.TraineeRepository;
 using traineeManagementAPI.Repositories.UserRepository;
 using traineeManagementAPI.Service.AuthService;
+using traineeManagementAPI.Service.MentorService;
 using traineeManagementAPI.Service.TraineeService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,9 +24,6 @@ builder.Services.AddCors(options =>
    );
 });
 
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
-
 builder.Services.AddControllers()
    .AddJsonOptions(options =>
    {
@@ -33,28 +32,32 @@ builder.Services.AddControllers()
       );
    });
 
-builder.Services.AddControllers();
-builder.Services.AddScoped<ITraineeService, TraineeService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
  
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+);
+
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<ITraineeRepository, TraineeRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITraineeService, TraineeService>();
 
-builder.Logging.AddConsole();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IMentorRepository, MentorRepository>();
+builder.Services.AddScoped<IMentorService, MentorService>();
+
+builder.Logging.AddConsole(); // for loggin
 builder.Logging.AddDebug();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
-
 var app = builder.Build();
-
 
 app.UseSwagger();
 app.UseSwaggerUI();

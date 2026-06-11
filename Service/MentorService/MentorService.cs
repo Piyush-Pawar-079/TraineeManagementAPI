@@ -5,9 +5,10 @@ using traineeManagementAPI.Repositories.MentorRepository;
 
 namespace traineeManagementAPI.Service.MentorService;
 
-public class MentorService(IMentorRepository repository) : IMentorService
+public class MentorService(IMentorRepository repository, ILogger<MentorService> logger) : IMentorService
 {
     private readonly IMentorRepository _repo = repository;
+    private readonly ILogger<MentorService> _logger = logger;
     private static int _nextId = 0;
 
     private MentorResponseDTO MapToMentorResponseDTO(Mentor mentor)
@@ -68,8 +69,37 @@ public class MentorService(IMentorRepository repository) : IMentorService
 
     public async Task<MentorResponseDTO?> UpdateAsync(int id, UpdateMentorRequestDTO updateMentorDto)
     {
-        // var updatedMentor = await _repo.UpdateAsync(id, updateMentorDto);
-        return null;
+        var existingMentor = await _repo.GetByIdAsync(id);
+
+        if (existingMentor == null)
+        {
+            return null;
+        }
+
+        if(updateMentorDto.FirstName != null) 
+            existingMentor.FirstName = updateMentorDto.FirstName;
+        
+        if(updateMentorDto.LastName != null) 
+            existingMentor.LastName = updateMentorDto.LastName;
+
+        if(updateMentorDto.Email != null) 
+            existingMentor.Email = updateMentorDto.Email;
+        
+        if(updateMentorDto.Expertise != null) 
+            existingMentor.Expertise = updateMentorDto.Expertise;
+        
+        if(updateMentorDto.Status != null) 
+            existingMentor.Status = updateMentorDto.Status.Value;
+
+        existingMentor.UpdatedDate = DateTime.Now;
+
+        var desiredTrainee = await _repo.UpdateAsync(id, existingMentor);
+
+        if(desiredTrainee == null)
+            return null;
+
+        _logger.LogInformation("Trainee Updated Successfully");
+        return MapToMentorResponseDTO(desiredTrainee);
     }
 
     public async Task<bool> DeleteAsync(int id)

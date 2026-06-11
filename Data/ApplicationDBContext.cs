@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using traineeManagementAPI.DTO.UserDTOs;
 using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.Data;
@@ -23,7 +24,7 @@ public class ApplicationDBContext : DbContext
 
         // Seed initial data
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, Username = "Admin", Email = "admin@gmail.com", PasswordHash = "admin@12345", Role = "Admin", CreatedDate = DateTime.Now, UpdatedDate = DateTime.Now }
+            new User { Id = 1, Username = "Admin", Email = "admin@gmail.com", PasswordHash = "admin@12345", Role = Role.Admin, CreatedDate = DateTime.Now, UpdatedDate = DateTime.Now }
         );
     }
 

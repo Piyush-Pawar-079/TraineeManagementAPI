@@ -81,7 +81,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             existingTrainee.TechStack = updateDto.TechStack;
         
         if(updateDto.Status != null) 
-            existingTrainee.Status = updateDto.Status;
+            existingTrainee.Status = updateDto.Status.Value;
 
         existingTrainee.UpdatedDate = DateTime.Now;
 

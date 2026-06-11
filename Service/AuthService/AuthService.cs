@@ -103,7 +103,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
         {
             new Claim(ClaimTypes.Name, userRequestDTO.Username),
             new Claim(ClaimTypes.Email, userRequestDTO.Email),
-            new Claim(ClaimTypes.Role, userRequestDTO.Role)
+            new Claim(ClaimTypes.Role, userRequestDTO.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(
