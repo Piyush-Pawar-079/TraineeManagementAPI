@@ -16,6 +16,8 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
 
     public DbSet<TaskAssignment> TaskAssignments { set; get; }
 
+    public DbSet<Submission> Submissions { get; set; }
+
      protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -42,6 +44,11 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
             .WithMany(t => t.TaskAssignments)        // Each LearningTask has many TaskAssignments
             .HasForeignKey(ta => ta.LearningTaskId) // Foreign key in Task Assignment table
             .OnDelete(DeleteBehavior.Cascade); // Cascade Null
+
+        modelBuilder.Entity<TaskAssignment>()
+            .HasOne(ta => ta.Submission)
+            .WithOne(s => s.TaskAssignment)
+            .HasForeignKey<Submission>(s => s.TaskAssignmentId);
         
     }
 
