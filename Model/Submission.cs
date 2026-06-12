@@ -15,4 +15,5 @@ public class Submission
     public required string Notes { get; set; }
     public required DateTime SubmittedDate { get; set; }
     public required string Status { get; set; }
+    public List<Review> Reviews { get; set; } = [];
 }

@@ -11,5 +11,7 @@ public class Mentor
     public DateTime CreatedDate { get; set; } // auto-generated
     public DateTime UpdatedDate { get; set; } // auto-generated
     public List<TaskAssignment> TaskAssignments { get; set; } = [];
+    public List<Review> Reviews { get; set; } = [];
+
 
 }

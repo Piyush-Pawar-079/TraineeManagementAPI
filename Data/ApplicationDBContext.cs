@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.DTO.UserDTOs;
 using traineeManagementAPI.Model;
@@ -17,6 +18,8 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
     public DbSet<TaskAssignment> TaskAssignments { set; get; }
 
     public DbSet<Submission> Submissions { get; set; }
+
+    public DbSet<Review> Reviews { get; set; }
 
      protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,6 +52,16 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
             .HasOne(ta => ta.Submission)
             .WithOne(s => s.TaskAssignment)
             .HasForeignKey<Submission>(s => s.TaskAssignmentId);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Submission)
+            .WithMany(s => s.Reviews)
+            .HasForeignKey(r => r.SubmissionId);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Mentor)
+            .WithMany(s => s.Reviews)
+            .HasForeignKey(r => r.MentorId);
         
     }
 
