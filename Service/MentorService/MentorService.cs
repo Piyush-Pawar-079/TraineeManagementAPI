@@ -55,8 +55,8 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
             Email = createMentorDto.Email,
             Expertise = createMentorDto.Expertise,
             Status = createMentorDto.Status,
-            CreatedDate = DateTime.Now,
-            UpdatedDate = DateTime.Now
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
         };
 
         _nextId++;
@@ -89,9 +89,9 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
             existingMentor.Expertise = updateMentorDto.Expertise;
         
         if(updateMentorDto.Status != null) 
-            existingMentor.Status = updateMentorDto.Status.Value;
+            existingMentor.Status = updateMentorDto.Status;
 
-        existingMentor.UpdatedDate = DateTime.Now;
+        existingMentor.UpdatedDate = DateTime.UtcNow;
 
         var desiredTrainee = await _repo.UpdateAsync(id, existingMentor);
 

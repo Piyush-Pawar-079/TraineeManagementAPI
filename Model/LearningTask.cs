@@ -1,3 +1,5 @@
+using traineeManagementAPI.DTO.LearningTaskDTOs;
+
 namespace traineeManagementAPI.Model;
 
 public class LearningTask

@@ -50,8 +50,8 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
             PasswordHash = HashedPassword,
             Email = createUserRequestDTO.Email,
             Role = createUserRequestDTO.Role,
-            CreatedDate = DateTime.Now,
-            UpdatedDate = DateTime.Now
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
         };
 
         _nextId++;

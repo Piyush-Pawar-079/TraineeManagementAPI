@@ -7,7 +7,7 @@ public class UserResponseDTO
     public required String Email { get; set; }
 
     // public required String  PasswordHash { get; set; }  we never send user their password. 
-    public required Role Role { get; set; }
+    public required String Role { get; set; }
     public DateTime CreatedDate { get; set; } // auto-generated
     public DateTime UpdatedDate { get; set; } // auto-generated
 }

@@ -7,12 +7,36 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace traineeManagementAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class UserAndMentorTable : Migration
+    public partial class StatusTypeUpdated : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "LearningTasks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Title = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ExpectedTechStack = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DueDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LearningTasks", x => x.Id);
+                })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
@@ -29,7 +53,8 @@ namespace traineeManagementAPI.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Expertise = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -53,7 +78,8 @@ namespace traineeManagementAPI.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     TechStack = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -75,7 +101,8 @@ namespace traineeManagementAPI.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PasswordHash = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Role = table.Column<int>(type: "int", nullable: false),
+                    Role = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -88,7 +115,7 @@ namespace traineeManagementAPI.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedDate", "Email", "PasswordHash", "Role", "UpdatedDate", "Username" },
-                values: new object[] { 1, new DateTime(2026, 6, 11, 13, 25, 41, 397, DateTimeKind.Local).AddTicks(1807), "admin@gmail.com", "admin@12345", 0, new DateTime(2026, 6, 11, 13, 25, 41, 397, DateTimeKind.Local).AddTicks(1992), "Admin" });
+                values: new object[] { 1, new DateTime(2026, 6, 12, 6, 54, 43, 294, DateTimeKind.Utc).AddTicks(8220), "admin@gmail.com", "admin@12345", "Admin", new DateTime(2026, 6, 12, 6, 54, 43, 294, DateTimeKind.Utc).AddTicks(8633), "Admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Username",
@@ -100,6 +127,9 @@ namespace traineeManagementAPI.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "LearningTasks");
+
             migrationBuilder.DropTable(
                 name: "Mentors");
 

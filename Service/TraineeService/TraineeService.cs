@@ -60,7 +60,6 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<TraineeResponseDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
-
         var existingTrainee = await _repository.GetByIdAsync(id);
 
         if (existingTrainee == null)
@@ -81,9 +80,9 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             existingTrainee.TechStack = updateDto.TechStack;
         
         if(updateDto.Status != null) 
-            existingTrainee.Status = updateDto.Status.Value;
+            existingTrainee.Status = updateDto.Status;
 
-        existingTrainee.UpdatedDate = DateTime.Now;
+        existingTrainee.UpdatedDate = DateTime.UtcNow;
 
         var desiredTrainee = await _repository.UpdateAsync(id, existingTrainee);
 
@@ -106,8 +105,8 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             Email = trainee.Email,
             TechStack = trainee.TechStack,
             Status = trainee.Status,
-            CreatedDate = DateTime.Now,
-            UpdatedDate = DateTime.Now
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
         };
 
         _nextId++;

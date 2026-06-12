@@ -40,6 +40,7 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     [HttpPut("{id}")]
     public async Task<ActionResult<TraineeResponseDTO?>> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
+        
         var updatedTrainee = await _traineeService.UpdateTrainee(id, updateDto);
 
         if (updatedTrainee == null)

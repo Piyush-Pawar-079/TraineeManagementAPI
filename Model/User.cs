@@ -10,7 +10,7 @@ public class User
     public required String Username { get; set; } // unique
     public required String Email { get; set; }
     public required String  PasswordHash { get; set; }
-    public required Role Role { get; set; }
+    public required String Role { get; set; }
     public DateTime CreatedDate { get; set; } // auto-generated
     public DateTime UpdatedDate { get; set; } // auto-generated
 

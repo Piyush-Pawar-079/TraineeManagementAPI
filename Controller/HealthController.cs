@@ -13,7 +13,7 @@ public class HealthController : ControllerBase
         {
             status = "running",
             application = "Trainee Management API",
-            timestamp= DateTime.Now
+            timestamp= DateTime.UtcNow
         });
     }
 }

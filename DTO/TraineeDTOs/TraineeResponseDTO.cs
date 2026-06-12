@@ -12,7 +12,7 @@ public class TraineeResponseDTO
 
     public string TechStack { set; get; } = string.Empty;
 
-    public Status Status { set; get; } 
+    public string Status { set; get; } = string.Empty;
 
     public DateTime CreateDate { set; get; }
 

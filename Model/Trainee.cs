@@ -9,7 +9,7 @@ namespace traineeManagementAPI.Model;
     public required String LastName { get; set; }
     public required String Email { get; set; }
     public required String  TechStack { get; set; }
-    public required Status Status { get; set; }
+    public required String Status { get; set; }
     public DateTime CreatedDate { get; set; } // auto-generated
     public DateTime UpdatedDate { get; set; } // auto-generated
     

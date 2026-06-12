@@ -13,5 +13,5 @@ public class UpdateMentorRequestDTO
     public string? Expertise { set; get; }
 
     [EnumDataType(typeof(MentorStatus), ErrorMessage = "Status can only be Active or Inactive")]
-    public MentorStatus? Status { set; get; }
+    public String? Status { set; get; }
 }
