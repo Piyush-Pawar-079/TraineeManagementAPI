@@ -26,11 +26,11 @@ public class CreateTraineeRequestDTO
     [EmailAddress(ErrorMessage = "Valid Email is required")]
     public string Email { set; get; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Tech stack is required.")]
     [MinLength(1)]
     public string TechStack { set; get; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Status is required.")]
     [MinLength(1)]
     [EnumDataType(typeof(Status), ErrorMessage = "Status can only be Active, Inactive or Completed")]
     public required string Status { set; get; }

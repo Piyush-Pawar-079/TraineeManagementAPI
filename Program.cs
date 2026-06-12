@@ -4,12 +4,14 @@ using traineeManagementAPI.Data;
 
 using traineeManagementAPI.Repositories.LearningTaskRepository;
 using traineeManagementAPI.Repositories.MentorRepository;
+using traineeManagementAPI.Repositories.TaskAssignmentRepository;
 using traineeManagementAPI.Repositories.TraineeRepository;
 using traineeManagementAPI.Repositories.UserRepository;
 
 using traineeManagementAPI.Service.AuthService;
 using traineeManagementAPI.Service.LearningTaskService;
 using traineeManagementAPI.Service.MentorService;
+using traineeManagementAPI.Service.TaskAssignmentService;
 using traineeManagementAPI.Service.TraineeService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +36,7 @@ builder.Services.AddControllers()
       options.JsonSerializerOptions.Converters.Add(
          new JsonStringEnumConverter()
       );
+      // options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
    });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -57,6 +60,10 @@ builder.Services.AddScoped<IMentorService, MentorService>();
 
 builder.Services.AddScoped<ILearningTaskRepository, LearningTaskRepository>();
 builder.Services.AddScoped<ILearningTaskService, LearningTaskService>();
+
+
+builder.Services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
+builder.Services.AddScoped<ITaskAssignmentService, TaskAssignmentService>();
 
 builder.Logging.AddConsole(); // for loggin
 builder.Logging.AddDebug();

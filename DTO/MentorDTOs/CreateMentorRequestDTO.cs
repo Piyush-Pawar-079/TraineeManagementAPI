@@ -20,10 +20,10 @@ public class CreateMentorRequestDTO
     [EmailAddress(ErrorMessage = "Valid Email is required")]
     public required string Email { set; get; }
 
-    [Required]
+    [Required(ErrorMessage = "Expertise is required.")]
     public required string Expertise { set; get; }
 
-    [Required]
+    [Required(ErrorMessage = "Status is required.")]
     [EnumDataType(typeof(MentorStatus), ErrorMessage = "Status can only be Active or Inactive")]
     public required string Status { set; get; }
 }

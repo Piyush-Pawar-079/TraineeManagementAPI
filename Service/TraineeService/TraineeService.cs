@@ -32,6 +32,17 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             Email = trainee.Email,
             TechStack = trainee.TechStack,
             Status = trainee.Status,
+            TaskAssignment = trainee.TaskAssignments.Select(ta => new TaskAssignment
+            {
+                Id = ta.Id,
+                TraineeId = ta.TraineeId,
+                MentorId = ta.MentorId,
+                LearningTaskId = ta.LearningTaskId,
+                AssignedDate = ta.AssignedDate,
+                DueDate = ta.DueDate,
+                Status = ta.Status,
+                Remarks = ta?.Remarks
+            }).ToList(),
             CreateDate = trainee.CreatedDate,
             UpdateDate = trainee.UpdatedDate
         };

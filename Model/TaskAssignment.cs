@@ -31,5 +31,5 @@ public class TaskAssignment : IValidatableObject
             {  
                 yield return new ValidationResult("Assigned date must be greater than the Due date.", new[] { "Assigned Date" });  
             }  
-        } 
+        }
 }

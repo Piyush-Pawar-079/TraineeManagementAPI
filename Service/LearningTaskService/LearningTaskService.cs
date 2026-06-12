@@ -20,6 +20,18 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
             ExpectedTechStack = LearningTask.ExpectedTechStack,
             DueDate = LearningTask.DueDate,
             Status = LearningTask.Status,
+            TaskAssignment = LearningTask.TaskAssignments.Select(ta => new TaskAssignment
+            {
+                Id = ta.Id,
+                TraineeId = ta.TraineeId,
+                Trainee = ta.Trainee,
+                MentorId = ta.MentorId,
+                LearningTaskId = ta.LearningTaskId,
+                AssignedDate = ta.AssignedDate,
+                DueDate = ta.DueDate,
+                Status = ta.Status,
+                Remarks = ta?.Remarks
+            }).ToList(),
             CreatedDate = LearningTask.CreatedDate,
             UpdatedDate = LearningTask.UpdatedDate
         };

@@ -29,7 +29,7 @@ public class CreateLearningTaskRequestDTO
     [Required(ErrorMessage = "DueDate is required")]
     public required DateTime DueDate { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Status is required.")]
     [EnumDataType(typeof(LearningTaskStatus), ErrorMessage = "Status can only be Draft, Published or Closed.")]
     public required string Status { get; set; }
 }

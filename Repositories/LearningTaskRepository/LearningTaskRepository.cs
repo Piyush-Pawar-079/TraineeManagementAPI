@@ -10,12 +10,12 @@ public class LearningTaskRepository(ApplicationDBContext context) : ILearningTas
 
     public async Task<List<LearningTask>> GetAllAsync()
     {
-        return await _context.LearningTasks.ToListAsync();
+        return await _context.LearningTasks.Include(l => l.TaskAssignments).ToListAsync();
     }
 
     public async Task<LearningTask?> GetByIdAsync(int id)
     {
-        return await _context.LearningTasks.FindAsync(id);
+        return await _context.LearningTasks.Include(l => l.TaskAssignments).FirstOrDefaultAsync(l => l.Id == id);
     }
 
     public async Task<LearningTask> CreateAsync(LearningTask LearningTask)

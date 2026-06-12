@@ -10,12 +10,12 @@ public class MentorRepository(ApplicationDBContext context) : IMentorRepository
 
     public async Task<List<Mentor>> GetAllAsync()
     {
-        return await _context.Mentors.ToListAsync();
+        return await _context.Mentors.Include(m => m.TaskAssignments).ToListAsync();
     }
 
     public async Task<Mentor?> GetByIdAsync(int id)
     {
-        return await _context.Mentors.FindAsync(id);
+        return await _context.Mentors.Include(m => m.TaskAssignments).FirstOrDefaultAsync(m => m.Id == id);
     }
 
     public async Task<Mentor> CreateAsync(Mentor mentor)

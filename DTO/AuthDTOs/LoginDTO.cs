@@ -4,9 +4,9 @@ namespace traineeManagementAPI.DTO.AuthDTOs;
 
 public class LoginDTO
 {
-    [Required]
+    [Required(ErrorMessage = "Username is required.")]
     public string Username { set; get; } = String.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Password is required.")]
     public string Password { set; get; } = String.Empty;
 }

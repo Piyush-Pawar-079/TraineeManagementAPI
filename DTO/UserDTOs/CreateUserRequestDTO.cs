@@ -14,17 +14,17 @@ public enum Role
 [Index(nameof(Username), IsUnique = true)]
 public class CreateUserRequestDTO
 {
-    [Required]
+    [Required(ErrorMessage = "Username is required.")]
     public required String Username { get; set; } // unique
 
-    [Required]
+    [Required(ErrorMessage = "Email is required.")]
     [EmailAddress(ErrorMessage = "Valid Email is required")]
     public required String Email { get; set; }
     
-    [Required]
+    [Required(ErrorMessage = "Password is required.")]
     public required String  Password { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Role is required.")]
     [EnumDataType(typeof(Role), ErrorMessage = "Role can only be Admin, Mentor or Trainee")]
     public required String Role { get; set; }
 

@@ -11,12 +11,12 @@ public class TraineeRepository(ApplicationDBContext context) : ITraineeRepositor
 
     public async Task<List<Trainee>> GetAllAsync()
     {
-        return await _context.Trainees.ToListAsync();
+        return await _context.Trainees.Include(t => t.TaskAssignments).ToListAsync();
     }
 
     public async Task<Trainee?> GetByIdAsync(int id)
     {
-        return await _context.Trainees.FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Trainees.Include(t => t.TaskAssignments).FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<Trainee?> UpdateAsync(int id, Trainee trainee)
