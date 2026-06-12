@@ -1,5 +1,3 @@
-using traineeManagementAPI.DTO.MentorDTOs;
-
 namespace traineeManagementAPI.Model;
 
 public class Mentor
@@ -8,8 +6,10 @@ public class Mentor
     public required string FirstName { get; set; } 
     public required string LastName { get; set; }
     public required string Email { get; set; }
-    public required string  Expertise { get; set; }
+    public required string Expertise { get; set; }
     public required string Status { get; set; }
     public DateTime CreatedDate { get; set; } // auto-generated
     public DateTime UpdatedDate { get; set; } // auto-generated
+    public ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
+
 }
