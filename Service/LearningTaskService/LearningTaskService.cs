@@ -1,4 +1,3 @@
-using Azure.Core;
 using traineeManagementAPI.DTO.LearningTaskDTOs;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories.LearningTaskRepository;

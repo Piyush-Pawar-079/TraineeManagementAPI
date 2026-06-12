@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO.LearningTaskDTOs;
 using traineeManagementAPI.Service.LearningTaskService;
 
 namespace traineeManagementAPI.Controller;
 
+// [Authorize]
 [ApiController]
 [Route("/api/learning-tasks")]
 public class LearningTaskController(ILearningTaskService LearningTaskService, ILogger<LearningTaskController> logger) : ControllerBase
@@ -11,14 +13,12 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
     private readonly ILearningTaskService _LearningTaskService = LearningTaskService;
     private readonly ILogger<LearningTaskController> _logger = logger;
 
-    // [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<LearningTaskResponseDTO>>> GetAllLearningTasks()
     {
         return await _LearningTaskService.GetAllAsync();
     }
 
-    // [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<LearningTaskResponseDTO?>> GetLearningTaskById(int id)
     {
@@ -34,7 +34,6 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
 
     }
 
-    // [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<LearningTaskResponseDTO?>> UpdateLearningTask(int id, UpdateLearningTaskRequestDTO updateDto)
     {
@@ -49,7 +48,6 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
         return Ok(updatedLearningTask);
     }
 
-    // [Authorize]
     [HttpPost]
     public async Task<ActionResult<LearningTaskResponseDTO>> CreateLearningTask(CreateLearningTaskRequestDTO createDto)
     {
@@ -57,7 +55,6 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
     }
 
 
-    // [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteLearningTask(int id)
     {

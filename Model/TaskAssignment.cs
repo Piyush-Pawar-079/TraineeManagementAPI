@@ -8,6 +8,6 @@ public class TaskAssignment
     public int LearningTaskId { get; set; }
     public DateTime AssignedDate { get; set; }
     public DateTime DueDate { get; set; }
-    public String Status { get; set; } = String.Empty;
-    public String? Remarks { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Remarks { get; set; }
 }

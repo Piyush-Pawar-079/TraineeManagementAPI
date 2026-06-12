@@ -4,14 +4,20 @@ namespace traineeManagementAPI.DTO.LearningTaskDTOs;
 
 public class UpdateLearningTaskRequestDTO
 {
-    public String? Title;
+    [MaxLength(50)]
+    [MinLength(1)]
+    public string? Title { get; set; }
 
-    public String? Description;
+    [MaxLength(50)]
+    [MinLength(1)]
+    public string? Description { get; set; }
 
-    public String? ExpectedTechStack;
+    [MaxLength(50)]
+    [MinLength(1)]
+    public string? ExpectedTechStack { get; set; }
 
     public DateTime? DueDate;
 
     [EnumDataType(typeof(LearningTaskStatus), ErrorMessage = "Status can only be Draft, Published or Closed.")]
-    public String? Status;
+    public string? Status { get; set; }
 }

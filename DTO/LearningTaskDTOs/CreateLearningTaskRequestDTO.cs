@@ -11,19 +11,25 @@ public enum LearningTaskStatus
 
 public class CreateLearningTaskRequestDTO
 {
-    [Required]
-    public required String Title;
+    [Required(ErrorMessage = "Title is required")]
+    [MaxLength(50)]
+    [MinLength(1)]    
+    public required string Title { get; set; }
 
-    [Required]
-    public required String Description;
+    [Required(ErrorMessage = "Description is required")]
+    [MaxLength(50)]
+    [MinLength(1)]
+    public required string Description { get; set; }
 
-    [Required]
-    public required String ExpectedTechStack;
+    [Required(ErrorMessage = "ExpectedTechStack is required")]
+    [MaxLength(50)]
+    [MinLength(1)]
+    public required string ExpectedTechStack { get; set; }
 
-    [Required]
-    public required DateTime DueDate;
+    [Required(ErrorMessage = "DueDate is required")]
+    public required DateTime DueDate { get; set; }
 
     [Required]
     [EnumDataType(typeof(LearningTaskStatus), ErrorMessage = "Status can only be Draft, Published or Closed.")]
-    public required String Status;
+    public required string Status { get; set; }
 }

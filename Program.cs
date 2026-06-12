@@ -1,10 +1,14 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.Data;
+
+using traineeManagementAPI.Repositories.LearningTaskRepository;
 using traineeManagementAPI.Repositories.MentorRepository;
 using traineeManagementAPI.Repositories.TraineeRepository;
 using traineeManagementAPI.Repositories.UserRepository;
+
 using traineeManagementAPI.Service.AuthService;
+using traineeManagementAPI.Service.LearningTaskService;
 using traineeManagementAPI.Service.MentorService;
 using traineeManagementAPI.Service.TraineeService;
 
@@ -50,6 +54,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IMentorRepository, MentorRepository>();
 builder.Services.AddScoped<IMentorService, MentorService>();
+
+builder.Services.AddScoped<ILearningTaskRepository, LearningTaskRepository>();
+builder.Services.AddScoped<ILearningTaskService, LearningTaskService>();
 
 builder.Logging.AddConsole(); // for loggin
 builder.Logging.AddDebug();
