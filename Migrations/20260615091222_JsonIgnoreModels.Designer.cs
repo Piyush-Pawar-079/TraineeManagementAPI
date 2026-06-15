@@ -12,8 +12,8 @@ using traineeManagementAPI.Data;
 namespace traineeManagementAPI.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260612095942_TaskAssignmentAndRelationships")]
-    partial class TaskAssignmentAndRelationships
+    [Migration("20260615091222_JsonIgnoreModels")]
+    partial class JsonIgnoreModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,6 +100,76 @@ namespace traineeManagementAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Mentors");
+                });
+
+            modelBuilder.Entity("traineeManagementAPI.Model.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Feedback")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("MentorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReviewStatus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("ReviewedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubmissionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorId");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("traineeManagementAPI.Model.Submission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SubmissionUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("SubmittedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("TaskAssignmentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskAssignmentId");
+
+                    b.ToTable("Submissions");
                 });
 
             modelBuilder.Entity("traineeManagementAPI.Model.TaskAssignment", b =>
@@ -218,18 +288,36 @@ namespace traineeManagementAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedDate = new DateTime(2026, 6, 12, 9, 59, 41, 803, DateTimeKind.Utc).AddTicks(3775),
-                            Email = "admin@gmail.com",
-                            PasswordHash = "admin@12345",
-                            Role = "Admin",
-                            UpdatedDate = new DateTime(2026, 6, 12, 9, 59, 41, 803, DateTimeKind.Utc).AddTicks(4053),
-                            Username = "Admin"
-                        });
+            modelBuilder.Entity("traineeManagementAPI.Model.Review", b =>
+                {
+                    b.HasOne("traineeManagementAPI.Model.Mentor", "Mentor")
+                        .WithMany("Reviews")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("traineeManagementAPI.Model.Submission", "Submission")
+                        .WithMany("Reviews")
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mentor");
+
+                    b.Navigation("Submission");
+                });
+
+            modelBuilder.Entity("traineeManagementAPI.Model.Submission", b =>
+                {
+                    b.HasOne("traineeManagementAPI.Model.TaskAssignment", "TaskAssignment")
+                        .WithMany("Submission")
+                        .HasForeignKey("TaskAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TaskAssignment");
                 });
 
             modelBuilder.Entity("traineeManagementAPI.Model.TaskAssignment", b =>
@@ -266,7 +354,19 @@ namespace traineeManagementAPI.Migrations
 
             modelBuilder.Entity("traineeManagementAPI.Model.Mentor", b =>
                 {
+                    b.Navigation("Reviews");
+
                     b.Navigation("TaskAssignments");
+                });
+
+            modelBuilder.Entity("traineeManagementAPI.Model.Submission", b =>
+                {
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("traineeManagementAPI.Model.TaskAssignment", b =>
+                {
+                    b.Navigation("Submission");
                 });
 
             modelBuilder.Entity("traineeManagementAPI.Model.Trainee", b =>

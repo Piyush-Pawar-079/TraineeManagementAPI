@@ -10,12 +10,12 @@ public class ReviewRepository(ApplicationDBContext context) : IReviewRepository
 
     public async Task<List<Review>> GetAllReviewsAsync()
     {
-        return await _context.Reviews.Include(s => s.Submission).Include(s => s.Mentor).ToListAsync();
+        return await _context.Reviews.Include(s => s.Submission).Include(s => s.Mentor).ThenInclude(m => m.TaskAssignments).ToListAsync();
     }
 
     public async Task<Review?> GetReviewByIdAsync(int id)
     {
-        return await _context.Reviews.Include(s => s.Submission).Include(s => s.Mentor).FirstOrDefaultAsync(s => s.Id == id);
+        return await _context.Reviews.Include(s => s.Submission).Include(s => s.Mentor).ThenInclude(m => m.TaskAssignments).FirstOrDefaultAsync(s => s.Id == id);
     }
 
     public async Task<Review> CreateReviewAsync(Review Review)

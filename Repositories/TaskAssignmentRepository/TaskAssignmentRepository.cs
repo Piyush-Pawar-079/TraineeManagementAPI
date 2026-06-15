@@ -10,12 +10,14 @@ public class TaskAssignmentRepository(ApplicationDBContext context) : ITaskAssig
 
     public async Task<List<TaskAssignment>> GetAllTaskAssignmentAsync()
     {
-        return await _context.TaskAssignments.Include(ta => ta.Trainee).ToListAsync();
+        return await _context.TaskAssignments.Include(ta => ta.Trainee).Include(ta => ta.Mentor).Include(ta => ta.LearningTask)
+            .Include(ta => ta.Submission).ThenInclude(s => s.Reviews).ToListAsync();
     }
 
     public async Task<TaskAssignment?> GetTaskAssignmentByIdAsync(int id)
     {
-        return await _context.TaskAssignments.Include(ta => ta.Trainee).FirstOrDefaultAsync(ta => ta.Id == id);
+        return await _context.TaskAssignments.Include(ta => ta.Trainee).Include(ta => ta.Mentor).Include(ta => ta.LearningTask)
+            .Include(ta => ta.Submission).FirstOrDefaultAsync(ta => ta.Id == id);
     }
 
     public async Task<TaskAssignment> CreateTaskAssignmentAsync(TaskAssignment taskAssignment)

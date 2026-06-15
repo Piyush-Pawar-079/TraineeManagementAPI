@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using traineeManagementAPI.Data;
 
@@ -18,6 +19,10 @@ using traineeManagementAPI.Service.ReviewService;
 using traineeManagementAPI.Service.SubmissionService;
 using traineeManagementAPI.Service.TaskAssignmentService;
 using traineeManagementAPI.Service.TraineeService;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +54,47 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 );
 
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration.GetValue<string>("Token:Issuer"),
+            ValidAudience = builder.Configuration.GetValue<string>("Token:Audience"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("Token:Key")!)),
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = "Role"
+        };
+    });
+
+builder.Services.AddOpenApiDocument(config =>
+{
+   config.DocumentName = "v1";
+   config.Title = "Training Management api";
+ 
+   config.AddSecurity("JWT", new NSwag.OpenApiSecurityScheme
+   {
+      Type = OpenApiSecuritySchemeType.ApiKey,
+      Scheme = "Bearer",
+      In = OpenApiSecurityApiKeyLocation.Header,
+      Name = "Authorization",
+      Description = "Bearer {your JWT token}"
+   });
+ 
+   config.OperationProcessors.Add(
+      new AspNetCoreOperationSecurityScopeProcessor("JWT")
+   );
+});
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
@@ -82,7 +128,10 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseSwagger();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseOpenApi();
 app.UseSwaggerUI();
 
 app.MapControllers();
@@ -92,7 +141,6 @@ app.MapGet("/", () =>
     return "Backend is running properly";
 });
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -108,7 +156,7 @@ app.UseExceptionHandler(options =>
         var exceptionFeature = context.Features.Get<IExceptionHandler>();
         if (exceptionFeature is not null)
         {
-            var error = new { message = "An unexpected error occurred" };
+            var error = new { message = "An unexpected error occurred. Please try again later." };
             await context.Response.WriteAsJsonAsync(error);
         }
     });

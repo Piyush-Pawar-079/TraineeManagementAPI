@@ -10,7 +10,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
     private readonly ILogger<LearningTaskService> _logger = logger;
     private static int _nextId = 0;
 
-    private LearningTaskResponseDTO MapToLearningTaskResponseDTO(LearningTask LearningTask)
+    public LearningTaskResponseDTO MapToLearningTaskResponseDTO(LearningTask LearningTask)
     {
         return new LearningTaskResponseDTO
         {
@@ -20,18 +20,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
             ExpectedTechStack = LearningTask.ExpectedTechStack,
             DueDate = LearningTask.DueDate,
             Status = LearningTask.Status,
-            TaskAssignment = LearningTask.TaskAssignments.Select(ta => new TaskAssignment
-            {
-                Id = ta.Id,
-                TraineeId = ta.TraineeId,
-                Trainee = ta.Trainee,
-                MentorId = ta.MentorId,
-                LearningTaskId = ta.LearningTaskId,
-                AssignedDate = ta.AssignedDate,
-                DueDate = ta.DueDate,
-                Status = ta.Status,
-                Remarks = ta?.Remarks
-            }).ToList(),
+            TaskAssignment = LearningTask.TaskAssignments.Select(ta => ta).ToList(),
             CreatedDate = LearningTask.CreatedDate,
             UpdatedDate = LearningTask.UpdatedDate
         };

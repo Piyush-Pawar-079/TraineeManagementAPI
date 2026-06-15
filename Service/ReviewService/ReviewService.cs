@@ -10,15 +10,17 @@ public class ReviewService(IReviewRepository repository, ILogger<ReviewService> 
     private readonly ILogger<ReviewService> _logger = logger;
     private static int _nextId = 0;
 
-    private ReviewResponseDTO MapToReviewResponseDTO(Review Review)
+    public ReviewResponseDTO MapToReviewResponseDTO(Review Review)
     {
         return new ReviewResponseDTO
         {
             Id = Review.Id,
             SubmissionId = Review.SubmissionId,
+            Submission = Review.Submission,
             MentorId = Review.MentorId,
+            Mentor = Review.Mentor,
             Feedback = Review.Feedback,
-            Score = Review.Score,
+            Score = Review.Score ?? null,
             ReviewStatus = Review.ReviewStatus,
             ReviewedDate = Review.ReviewedDate
         };

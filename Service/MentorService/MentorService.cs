@@ -1,6 +1,5 @@
 using Azure.Core;
 using traineeManagementAPI.DTO.MentorDTOs;
-using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories.MentorRepository;
 
@@ -12,7 +11,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
     private readonly ILogger<MentorService> _logger = logger;
     private static int _nextId = 0;
 
-    private MentorResponseDTO MapToMentorResponseDTO(Mentor mentor)
+    public MentorResponseDTO MapToMentorResponseDTO(Mentor mentor)
     {
         return new MentorResponseDTO
         {
@@ -22,17 +21,8 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
             Email = mentor.Email,
             Expertise = mentor.Expertise,
             Status = mentor.Status,
-            TaskAssignmentId = mentor.TaskAssignments.Select(ta => new TaskAssignment
-            {
-                Id = ta.Id,
-                TraineeId = ta.TraineeId,
-                MentorId = ta.MentorId,
-                LearningTaskId = ta.LearningTaskId,
-                AssignedDate = ta.AssignedDate,
-                DueDate = ta.DueDate,
-                Status = ta.Status,
-                Remarks = ta?.Remarks
-            }).ToList(),
+            TaskAssignments = mentor.TaskAssignments.Select(ta => ta).ToList(),
+            Reviews = mentor.Reviews,
             CreatedDate = mentor.CreatedDate,
             UpdatedDate = mentor.UpdatedDate
         };

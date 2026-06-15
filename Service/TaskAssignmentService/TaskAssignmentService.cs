@@ -11,14 +11,18 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
     private readonly ILogger<TaskAssignmentService> _logger = logger;
     private static int _nextId = 0;
 
-    private TaskAssignmentResponseDTO MapToTaskAssignmentResponseDTO(TaskAssignment taskAssignment)
+    public TaskAssignmentResponseDTO MapToTaskAssignmentResponseDTO(TaskAssignment taskAssignment)
     {
         return new TaskAssignmentResponseDTO
         {
             Id = taskAssignment.Id,
             TraineeId = taskAssignment.TraineeId,
+            Trainee = taskAssignment.Trainee,
             MentorId = taskAssignment.MentorId,
+            Mentor = taskAssignment.Mentor,
             LearningTaskId = taskAssignment.LearningTaskId,
+            LearningTask = taskAssignment.LearningTask,
+            Submission = taskAssignment.Submission,
             AssignedDate = taskAssignment.AssignedDate,
             DueDate = taskAssignment.DueDate,
             Status = taskAssignment.Status,

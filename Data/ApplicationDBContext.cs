@@ -25,11 +25,6 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
     {
         base.OnModelCreating(modelBuilder);
 
-        // Seed initial data
-        modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, Username = "Admin", Email = "admin@gmail.com", PasswordHash = "admin@12345", Role = Role.Admin.ToString(), CreatedDate = DateTime.UtcNow, UpdatedDate = DateTime.UtcNow }
-        );
-
         modelBuilder.Entity<TaskAssignment>()
             .HasOne(ta => ta.Trainee)          // Each TaskAssignment has one Trainee
             .WithMany(t => t.TaskAssignments)        // Each Trainee has many TaskAssignments

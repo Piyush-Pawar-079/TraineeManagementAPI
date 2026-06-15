@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace traineeManagementAPI.Controller;
 
-[Authorize]
 [ApiController]
 [Route("/api/trainees")]
 public class TraineeController(ITraineeService traineeService, ILogger<TraineeController> logger) : ControllerBase
@@ -15,6 +14,7 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     private readonly ITraineeService _traineeService = traineeService;
     private readonly ILogger<TraineeController> _logger = logger;
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees([FromQuery] FilterDTO filters, [FromQuery]PaginationParams paginationParams)
     {

@@ -10,12 +10,14 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
     private readonly ILogger<SubmissionService> _logger = logger;
     private static int _nextId = 0;
 
-    private SubmissionResponseDTO MapToSubmissionResponseDTO(Submission Submission)
+    public SubmissionResponseDTO MapToSubmissionResponseDTO(Submission Submission)
     {
         return new SubmissionResponseDTO
         {
             Id = Submission.Id,
             TaskAssignmentId = Submission.TaskAssignmentId,
+            TaskAssignment = Submission.TaskAssignment,
+            Reviews = Submission.Reviews,
             SubmissionUrl = Submission.SubmissionUrl,
             Notes = Submission.Notes,
             SubmittedDate = Submission.SubmittedDate,

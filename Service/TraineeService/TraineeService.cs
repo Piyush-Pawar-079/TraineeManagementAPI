@@ -22,7 +22,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
     private readonly ILogger<TraineeService> _logger = logger;
     private static int _nextId = 0;
 
-    private TraineeResponseDTO MapToDTO(Trainee trainee)
+    public TraineeResponseDTO MapToDTO(Trainee trainee)
     {
         return new TraineeResponseDTO
         {
@@ -32,17 +32,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             Email = trainee.Email,
             TechStack = trainee.TechStack,
             Status = trainee.Status,
-            TaskAssignment = trainee.TaskAssignments.Select(ta => new TaskAssignment
-            {
-                Id = ta.Id,
-                TraineeId = ta.TraineeId,
-                MentorId = ta.MentorId,
-                LearningTaskId = ta.LearningTaskId,
-                AssignedDate = ta.AssignedDate,
-                DueDate = ta.DueDate,
-                Status = ta.Status,
-                Remarks = ta?.Remarks
-            }).ToList(),
+            TaskAssignment = trainee.TaskAssignments.ToList(),            
             CreateDate = trainee.CreatedDate,
             UpdateDate = trainee.UpdatedDate
         };

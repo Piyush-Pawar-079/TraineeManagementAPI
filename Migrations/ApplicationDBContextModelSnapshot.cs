@@ -285,18 +285,6 @@ namespace traineeManagementAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedDate = new DateTime(2026, 6, 15, 6, 22, 5, 940, DateTimeKind.Utc).AddTicks(9009),
-                            Email = "admin@gmail.com",
-                            PasswordHash = "admin@12345",
-                            Role = "Admin",
-                            UpdatedDate = new DateTime(2026, 6, 15, 6, 22, 5, 940, DateTimeKind.Utc).AddTicks(9183),
-                            Username = "Admin"
-                        });
                 });
 
             modelBuilder.Entity("traineeManagementAPI.Model.Review", b =>
