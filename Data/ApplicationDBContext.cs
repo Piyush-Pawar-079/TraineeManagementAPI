@@ -48,10 +48,10 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
             .HasForeignKey(ta => ta.LearningTaskId) // Foreign key in Task Assignment table
             .OnDelete(DeleteBehavior.Cascade); // Cascade Null
 
-        modelBuilder.Entity<TaskAssignment>()
-            .HasOne(ta => ta.Submission)
-            .WithOne(s => s.TaskAssignment)
-            .HasForeignKey<Submission>(s => s.TaskAssignmentId);
+        modelBuilder.Entity<Submission>()
+            .HasOne(s => s.TaskAssignment)
+            .WithMany(ta => ta.Submission)
+            .HasForeignKey(s => s.TaskAssignmentId);
 
         modelBuilder.Entity<Review>()
             .HasOne(r => r.Submission)

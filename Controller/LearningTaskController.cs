@@ -5,7 +5,7 @@ using traineeManagementAPI.Service.LearningTaskService;
 
 namespace traineeManagementAPI.Controller;
 
-// [Authorize]
+[Authorize]
 [ApiController]
 [Route("/api/learning-tasks")]
 public class LearningTaskController(ILearningTaskService LearningTaskService, ILogger<LearningTaskController> logger) : ControllerBase

@@ -11,14 +11,12 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     private readonly ITaskAssignmentService _taskAssignmentService = TaskAssignmentService;
     private readonly ILogger<TaskAssignmentController> _logger = logger;
 
-    // [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<TaskAssignmentResponseDTO>>> GetAllTaskAssignments()
     {
         return await _taskAssignmentService.GetAllAsync();
     }
 
-    // [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskAssignmentResponseDTO?>> GetTaskAssignmentById(int id)
     {
@@ -34,7 +32,6 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
 
     }
 
-    // [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<TaskAssignmentResponseDTO?>> UpdateTaskAssignment(int id, UpdateTaskAssignmentRequestDTO updateDto)
     {
@@ -49,7 +46,6 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
         return Ok(updatedTaskAssignment);
     }
 
-    // [Authorize]
     [HttpPost]
     public async Task<ActionResult<TaskAssignmentResponseDTO>> CreateTaskAssignment(CreateTaskAssignmentRequestDTO createDto)
     {

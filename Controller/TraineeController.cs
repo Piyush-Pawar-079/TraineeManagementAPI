@@ -3,9 +3,11 @@ using traineeManagementAPI.Service.TraineeService;
 using traineeManagementAPI.DTO.TraineeDTOs;
 using traineeManagementAPI.Helpers;
 using traineeManagementAPI.DTO.HelperDTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace traineeManagementAPI.Controller;
 
+[Authorize]
 [ApiController]
 [Route("/api/trainees")]
 public class TraineeController(ITraineeService traineeService, ILogger<TraineeController> logger) : ControllerBase
@@ -13,14 +15,12 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     private readonly ITraineeService _traineeService = traineeService;
     private readonly ILogger<TraineeController> _logger = logger;
 
-    // [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees([FromQuery] FilterDTO filters, [FromQuery]PaginationParams paginationParams)
     {
         return await _traineeService.GetAllAsyncWithFilters(filters, paginationParams);
     }
 
-    // [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<TraineeResponseDTO?>> GetTraineeById(int id)
     {
@@ -36,7 +36,6 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
 
     }
 
-    // [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<TraineeResponseDTO?>> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
@@ -52,7 +51,6 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
         return Ok(updatedTrainee);
     }
 
-    // [Authorize]
     [HttpPost]
     public async Task<ActionResult<TraineeResponseDTO>> CreateTrainee(CreateTraineeRequestDTO createDto)
     {
@@ -60,7 +58,6 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     }
 
 
-    // [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTrainee(int id)
     {

@@ -18,7 +18,6 @@ public class MentorController(IMentorService mentorService, ILogger<MentorContro
         return await _mentorService.GetAllAsync();
     }
 
-    // [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<MentorResponseDTO?>> GetMentorById(int id)
     {
@@ -34,7 +33,6 @@ public class MentorController(IMentorService mentorService, ILogger<MentorContro
 
     }
 
-    // [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<MentorResponseDTO?>> UpdateMentor(int id, UpdateMentorRequestDTO updateDto)
     {
@@ -49,15 +47,12 @@ public class MentorController(IMentorService mentorService, ILogger<MentorContro
         return Ok(updatedMentor);
     }
 
-    // [Authorize]
     [HttpPost]
     public async Task<ActionResult<MentorResponseDTO>> CreateMentor(CreateMentorRequestDTO createDto)
     {
         return Ok(await _mentorService.CreateAsync(createDto));
     }
 
-
-    // [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMentor(int id)
     {
