@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace traineeManagementAPI.Controller;
 
+[Authorize]
 [ApiController]
 [Route("/api/trainees")]
 public class TraineeController(ITraineeService traineeService, ILogger<TraineeController> logger) : ControllerBase

@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO.SubmissionDTOs;
 using traineeManagementAPI.Service.SubmissionService;
 
 namespace traineeManagementAPI.Controller;
 
+[Authorize]
 [ApiController]
 [Route("api/submissions")]
 public class SubmissionController(ISubmissionService submissionService) : ControllerBase

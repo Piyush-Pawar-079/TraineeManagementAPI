@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO.MentorDTOs;
 using traineeManagementAPI.Service.MentorService;
 
 namespace traineeManagementAPI.Controller;
 
+[Authorize]
 [ApiController]
 [Route("/api/Mentors")]
 public class MentorController(IMentorService mentorService, ILogger<MentorController> logger) : ControllerBase

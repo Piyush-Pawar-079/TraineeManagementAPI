@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Service.TaskAssignmentService;
 
 namespace traineeManagementAPI.Controller;
 
+[Authorize]
 [ApiController]
 [Route("/api/task-assignment")]
 public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentService, ILogger<TaskAssignmentController> logger) : ControllerBase

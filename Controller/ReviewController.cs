@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO.ReviewDTOs;
 using traineeManagementAPI.Service.ReviewService;
 
 namespace traineeManagementAPI.Controller;
 
+[Authorize]
 [ApiController]
 [Route("api/reviews")]
 public class ReviewController(IReviewService ReviewService) : ControllerBase
