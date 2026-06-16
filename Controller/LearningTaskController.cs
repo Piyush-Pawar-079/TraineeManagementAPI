@@ -23,28 +23,13 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
     public async Task<ActionResult<LearningTaskResponseDTO?>> GetLearningTaskById(int id)
     {
         var LearningTask = await _LearningTaskService.GetByIdAsync(id);
-
-        if (LearningTask == null)
-        {
-            _logger.LogError("LearningTask with the specified Id is not available.");
-            return NotFound($"LearningTask with Id {id} not found");
-        }
-
         return Ok(LearningTask);
-
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<LearningTaskResponseDTO?>> UpdateLearningTask(int id, UpdateLearningTaskRequestDTO updateDto)
     {
         var updatedLearningTask = await _LearningTaskService.UpdateAsync(id, updateDto);
-
-        if (updatedLearningTask == null)
-        {
-            _logger.LogError("LearningTask with the specified Id is not available to update.");
-            return NotFound($"LearningTask with Id {id} not found");
-        }
-
         return Ok(updatedLearningTask);
     }
 
@@ -58,15 +43,8 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteLearningTask(int id)
     {
-        var deleteResult = await _LearningTaskService.DeleteAsync(id);
-
-        if (deleteResult == false)
-        {
-            _logger.LogError("LearningTask with the specified Id is not available to delete.");
-            return NotFound($"LearningTask with the Id {id} is not available");
-        }
+        await _LearningTaskService.DeleteAsync(id);
         return Ok();
-
     }
 
 }

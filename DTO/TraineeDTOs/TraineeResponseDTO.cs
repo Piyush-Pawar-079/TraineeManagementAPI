@@ -1,3 +1,4 @@
+using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.TraineeDTOs;
@@ -14,12 +15,12 @@ public class TraineeResponseDTO
 
     public string TechStack { set; get; } = string.Empty;
 
-    public string Status { set; get; } = string.Empty;
+    public Status Status { set; get; }
 
-    public required List<TaskAssignment> TaskAssignment { set; get; }
+    public required List<TaskAssignmentResponseDTO> TaskAssignment { set; get; }
 
-    public DateTime CreateDate { set; get; }
+    public DateTime CreatedDate { set; get; }
 
-    public DateTime UpdateDate { set; get; }
+    public DateTime UpdatedDate { set; get; }
 
 }

@@ -23,13 +23,6 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     public async Task<ActionResult<TaskAssignmentResponseDTO?>> GetTaskAssignmentById(int id)
     {
         var TaskAssignment = await _taskAssignmentService.GetByIdAsync(id);
-
-        if (TaskAssignment == null)
-        {
-            _logger.LogError("TaskAssignment with the specified Id is not available.");
-            return NotFound($"TaskAssignment with Id {id} not found");
-        }
-
         return Ok(TaskAssignment);
 
     }
@@ -38,13 +31,6 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     public async Task<ActionResult<TaskAssignmentResponseDTO?>> UpdateTaskAssignment(int id, UpdateTaskAssignmentRequestDTO updateDto)
     {
         var updatedTaskAssignment = await _taskAssignmentService.UpdateAsync(id, updateDto);
-
-        if (updatedTaskAssignment == null)
-        {
-            _logger.LogError("TaskAssignment with the specified Id is not available to update.");
-            return NotFound($"TaskAssignment with Id {id} not found");
-        }
-
         return Ok(updatedTaskAssignment);
     }
 

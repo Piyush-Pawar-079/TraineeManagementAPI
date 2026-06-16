@@ -17,7 +17,7 @@ public class CreateLearningTaskRequestDTO
     public required string Title { get; set; }
 
     [Required(ErrorMessage = "Description is required")]
-    [MaxLength(50)]
+    [MaxLength(100)]
     [MinLength(1)]
     public required string Description { get; set; }
 
@@ -31,5 +31,5 @@ public class CreateLearningTaskRequestDTO
 
     [Required(ErrorMessage = "Status is required.")]
     [EnumDataType(typeof(LearningTaskStatus), ErrorMessage = "Status can only be Draft, Published or Closed.")]
-    public required string Status { get; set; }
+    public required LearningTaskStatus Status { get; set; }
 }

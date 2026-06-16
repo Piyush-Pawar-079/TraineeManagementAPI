@@ -23,6 +23,6 @@ public class Review
     public Mentor? Mentor { get; set; }
     public required string Feedback { get; set; }
     public int? Score { get; set; }
-    public required string ReviewStatus { get; set; }
+    public required ReviewStatus ReviewStatus { get; set; }
     public DateTime ReviewedDate { get; set; } 
 }

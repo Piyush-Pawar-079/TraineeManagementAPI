@@ -5,7 +5,7 @@
 namespace traineeManagementAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class JsonIgnoreModels : Migration
+    public partial class OnDelete : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

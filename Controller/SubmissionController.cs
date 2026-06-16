@@ -24,10 +24,6 @@ public class SubmissionController(ISubmissionService submissionService) : Contro
     public async Task<ActionResult> GetById(int id)
     {
         var submission = await _submissionService.GetByIdAsync(id);
-        
-        if(submission == null)
-            return BadRequest($"Submission with the id {id} is not available");
-
         return Ok(submission);
     }
 
@@ -35,10 +31,6 @@ public class SubmissionController(ISubmissionService submissionService) : Contro
     public async Task<ActionResult> CreateSubmission(CreateSubmissionRequestDTO createSubmissionDTO)
     {
         var createdSubmission = await _submissionService.CreateAsync(createSubmissionDTO);
-
-        if(createdSubmission == null)
-            return BadRequest($"Something went wrong while creating submission");
-
         return Ok(createdSubmission);
     }
 

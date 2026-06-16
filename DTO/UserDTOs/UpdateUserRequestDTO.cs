@@ -18,6 +18,6 @@ public class UpdateUserRequestDTO
 
     [Required]
     [EnumDataType(typeof(Role), ErrorMessage = "Role can only be Admin, Mentor or Trainee")]
-    public String? Role { get; set; }
+    public Role? Role { get; set; }
 
 }

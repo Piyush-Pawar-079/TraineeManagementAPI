@@ -1,5 +1,8 @@
 using Azure.Core;
 using traineeManagementAPI.DTO.MentorDTOs;
+using traineeManagementAPI.DTO.ReviewDTOs;
+using traineeManagementAPI.DTO.TaskAssignmentDTOs;
+using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories.MentorRepository;
 
@@ -9,7 +12,6 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 {
     private readonly IMentorRepository _repo = repository;
     private readonly ILogger<MentorService> _logger = logger;
-    private static int _nextId = 0;
 
     public MentorResponseDTO MapToMentorResponseDTO(Mentor mentor)
     {
@@ -21,8 +23,27 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
             Email = mentor.Email,
             Expertise = mentor.Expertise,
             Status = mentor.Status,
-            TaskAssignments = mentor.TaskAssignments.Select(ta => ta).ToList(),
-            Reviews = mentor.Reviews,
+            TaskAssignments = mentor.TaskAssignments.Select(ta => new TaskAssignmentResponseDTO
+        {
+            Id = ta.Id,
+            TraineeId = ta.TraineeId,
+            MentorId = ta.MentorId,
+            LearningTaskId = ta.LearningTaskId,
+            AssignedDate = ta.AssignedDate,
+            DueDate = ta.DueDate,
+            Status = ta.Status,
+            Remarks = ta?.Remarks
+        }).ToList(),
+            Reviews = mentor.Reviews.Select(r => new ReviewResponseDTO
+        {
+            Id = r.Id,
+            SubmissionId = r.SubmissionId,
+            MentorId = r.MentorId,
+            Feedback = r.Feedback,
+            Score = r.Score ?? null,
+            ReviewStatus = r.ReviewStatus,
+            ReviewedDate = r.ReviewedDate
+        }).ToList(),
             CreatedDate = mentor.CreatedDate,
             UpdatedDate = mentor.UpdatedDate
         };
@@ -40,7 +61,8 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (desiredMentor == null)
         {
-            return null;
+            _logger.LogError("Mentor with the specified Id is not available.");
+            throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
         return MapToMentorResponseDTO(desiredMentor);
@@ -51,7 +73,6 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
     {
         Mentor newMentor = new()
         {
-            Id = _nextId,
             FirstName = createMentorDto.FirstName,
             LastName = createMentorDto.LastName,
             Email = createMentorDto.Email,
@@ -60,8 +81,6 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
             CreatedDate = DateTime.UtcNow,
             UpdatedDate = DateTime.UtcNow
         };
-
-        _nextId++;
 
         Mentor CreatedMentor = await _repo.CreateAsync(newMentor);
 
@@ -75,7 +94,8 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (existingMentor == null)
         {
-            return null;
+            _logger.LogError("Mentor with the specified Id is not available.");
+            throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
         if(updateMentorDto.FirstName != null) 
@@ -90,17 +110,20 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
         if(updateMentorDto.Expertise != null) 
             existingMentor.Expertise = updateMentorDto.Expertise;
         
-        if(updateMentorDto.Status != null) 
-            existingMentor.Status = updateMentorDto.Status;
+        if(updateMentorDto.Status.HasValue) 
+            existingMentor.Status = updateMentorDto.Status.Value;
 
         existingMentor.UpdatedDate = DateTime.UtcNow;
 
         var desiredTrainee = await _repo.UpdateAsync(id, existingMentor);
 
         if(desiredTrainee == null)
-            return null;
+        {
+            _logger.LogError("Something went wrong while updating a new Mentor.");
+            throw new Exception("Something went wrong while updating a new Mentor");
+        }
 
-        _logger.LogInformation("Trainee Updated Successfully");
+        _logger.LogInformation("Mentor Updated Successfully");
         return MapToMentorResponseDTO(desiredTrainee);
     }
 

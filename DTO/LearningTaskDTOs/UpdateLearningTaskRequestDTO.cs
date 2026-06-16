@@ -8,7 +8,7 @@ public class UpdateLearningTaskRequestDTO
     [MinLength(1)]
     public string? Title { get; set; }
 
-    [MaxLength(50)]
+    [MaxLength(100)]
     [MinLength(1)]
     public string? Description { get; set; }
 
@@ -19,5 +19,5 @@ public class UpdateLearningTaskRequestDTO
     public DateTime? DueDate;
 
     [EnumDataType(typeof(LearningTaskStatus), ErrorMessage = "Status can only be Draft, Published or Closed.")]
-    public string? Status { get; set; }
+    public LearningTaskStatus? Status { get; set; }
 }

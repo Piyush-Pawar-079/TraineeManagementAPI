@@ -14,7 +14,7 @@ public class CreateSubmissionRequestDTO
     public required string SubmissionUrl { get; set; }
     
     [Required]
-    [MaxLength(50)]
+    [MaxLength(100)]
     [MinLength(1)]
     public required string Notes { get; set; }
 
@@ -23,5 +23,5 @@ public class CreateSubmissionRequestDTO
     
     [Required]
     [EnumDataType(typeof(SubmissionStatus), ErrorMessage = "Status can only be Submitted or Resubmited")]
-    public required string Status { get; set; }
+    public required SubmissionStatus Status { get; set; }
 }

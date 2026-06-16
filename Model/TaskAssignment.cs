@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace traineeManagementAPI.Model;
 
-public enum TaskAssignemntStatus
+public enum TaskAssigmentStatus
 {
     Assigned,
     InProgress,
@@ -27,7 +27,7 @@ public class TaskAssignment : IValidatableObject
     public List<Submission> Submission { get; set; } = [];
     public DateTime AssignedDate { get; set; }
     public DateTime DueDate { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public TaskAssigmentStatus Status { get; set; }
     public string? Remarks { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)  

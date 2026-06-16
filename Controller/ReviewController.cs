@@ -24,10 +24,6 @@ public class ReviewController(IReviewService ReviewService) : ControllerBase
     public async Task<ActionResult> GetById(int id)
     {
         var Review = await _ReviewService.GetByIdAsync(id);
-        
-        if(Review == null)
-            return BadRequest($"Review with the id {id} is not available");
-
         return Ok(Review);
     }
 
@@ -35,10 +31,6 @@ public class ReviewController(IReviewService ReviewService) : ControllerBase
     public async Task<ActionResult> CreateReview(CreateReviewRequestDTO createReviewDTO)
     {
         var createdReview = await _ReviewService.CreateAsync(createReviewDTO);
-
-        if(createdReview == null)
-            return BadRequest($"Something went wrong while creating Review");
-
         return Ok(createdReview);
     }
 

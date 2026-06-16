@@ -3,6 +3,8 @@ using traineeManagementAPI.Repositories.TraineeRepository;
 using traineeManagementAPI.Helpers;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.DTO.HelperDTOs;
+using traineeManagementAPI.Exceptions;
+using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 
 namespace traineeManagementAPI.Service.TraineeService;
 
@@ -20,7 +22,6 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     private readonly ITraineeRepository _repository = repository;
     private readonly ILogger<TraineeService> _logger = logger;
-    private static int _nextId = 0;
 
     public TraineeResponseDTO MapToDTO(Trainee trainee)
     {
@@ -32,9 +33,19 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             Email = trainee.Email,
             TechStack = trainee.TechStack,
             Status = trainee.Status,
-            TaskAssignment = trainee.TaskAssignments.ToList(),            
-            CreateDate = trainee.CreatedDate,
-            UpdateDate = trainee.UpdatedDate
+            TaskAssignment = trainee.TaskAssignments.Select(ta => new TaskAssignmentResponseDTO
+                {
+                    Id = ta.Id,
+                    TraineeId = ta.TraineeId,
+                    MentorId = ta.MentorId,
+                    LearningTaskId = ta.LearningTaskId,
+                    AssignedDate = ta.AssignedDate,
+                    DueDate = ta.DueDate,
+                    Status = ta.Status,
+                    Remarks = ta?.Remarks
+                }).ToList(),            
+            CreatedDate = trainee.CreatedDate,
+            UpdatedDate = trainee.UpdatedDate
         };
     }
 
@@ -52,7 +63,8 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (trainee == null)
         {
-            return null;
+            _logger.LogError("Trainee with the specified Id is not available.");
+            throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
         return MapToDTO(trainee);
@@ -65,7 +77,8 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (existingTrainee == null)
         {
-            return null;
+            _logger.LogError("Trainee with the specified Id is not available.");
+            throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
         if(updateDto.FirstName != null) 
@@ -80,15 +93,18 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
         if(updateDto.TechStack != null) 
             existingTrainee.TechStack = updateDto.TechStack;
         
-        if(updateDto.Status != null) 
-            existingTrainee.Status = updateDto.Status;
+        if(updateDto.Status.HasValue) 
+            existingTrainee.Status = updateDto.Status.Value;
 
         existingTrainee.UpdatedDate = DateTime.UtcNow;
 
         var desiredTrainee = await _repository.UpdateAsync(id, existingTrainee);
 
         if(desiredTrainee == null)
-            return null;
+        {
+            _logger.LogError("Something went wrong while updating a new Trainee.");
+            throw new Exception("Something went wrong while updating a new Trainee");
+        }
 
         _logger.LogInformation("Trainee Updated Successfully");
         return MapToDTO(desiredTrainee);
@@ -97,10 +113,10 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<TraineeResponseDTO> CreateTrainee(CreateTraineeRequestDTO trainee)
     {
-        int traineeId = _nextId++; 
+        Console.WriteLine(trainee.Status);
+        Console.WriteLine(trainee.Status.GetType());
         var newTrainee = new Trainee
         {
-            Id = traineeId,
             FirstName = trainee.FirstName,
             LastName = trainee.LastName,
             Email = trainee.Email,
@@ -109,8 +125,6 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             CreatedDate = DateTime.UtcNow,
             UpdatedDate = DateTime.UtcNow
         };
-
-        _nextId++;
 
         var createdTrainee = await _repository.CreateAsync(newTrainee);
 
@@ -124,10 +138,8 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
         return await _repository.DeleteAsync(id);
     }
 
-    private static async Task<List<Trainee>> Search(String searchParam, List<Trainee> trainees)
+    private static List<Trainee> Search(String searchParam, List<Trainee> trainees)
     {
-        // var trainees = await _repository.GetAllAsync();
-
         var desiredTrainee = trainees.Where(
             t => 
             t.FirstName.IndexOf(searchParam, StringComparison.OrdinalIgnoreCase) >= 0 || 
@@ -139,7 +151,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
         return desiredTrainee.ToList();
     }
 
-    private static async Task<List<Trainee>> Sort(string sortParam, bool ascending, List<Trainee> trainees)
+    private static List<Trainee> Sort(string sortParam, bool ascending, List<Trainee> trainees)
     {
 
         // var trainees = await _repository.GetAllAsync();
@@ -173,7 +185,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (filters.SearchParam != null)
         {
-            allTrainees = await Search(filters.SearchParam, allTrainees);
+            allTrainees = Search(filters.SearchParam, allTrainees);
         }
 
         if (filters.StatusFilter != null)
@@ -183,7 +195,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if(filters.SortParam != null)
         {
-            allTrainees = await Sort(filters.SortParam, filters.Ascending != false, allTrainees);
+            allTrainees = Sort(filters.SortParam, filters.Ascending != false, allTrainees);
         }
 
         if (paginationParams != null)

@@ -18,7 +18,7 @@ public class CreateReviewRequestDTO
     
     [Required(ErrorMessage = "Status is required")]
     [EnumDataType(typeof(ReviewStatus), ErrorMessage = "Review status can only be Accepted, ChangesRequired or Rejected")]
-    public required string ReviewStatus { get; set; }
+    public required ReviewStatus ReviewStatus { get; set; }
 
     [Required(ErrorMessage = "ReviewDate is required")]
     public DateTime ReviewedDate { get; set; } 

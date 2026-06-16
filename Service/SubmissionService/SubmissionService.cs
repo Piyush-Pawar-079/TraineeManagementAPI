@@ -1,4 +1,7 @@
+using traineeManagementAPI.DTO.ReviewDTOs;
 using traineeManagementAPI.DTO.SubmissionDTOs;
+using traineeManagementAPI.DTO.TaskAssignmentDTOs;
+using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories.SubmissionRepository;
 
@@ -8,7 +11,6 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
 {
     private readonly ISubmissionRepository _repo = repository;
     private readonly ILogger<SubmissionService> _logger = logger;
-    private static int _nextId = 0;
 
     public SubmissionResponseDTO MapToSubmissionResponseDTO(Submission Submission)
     {
@@ -16,8 +18,27 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
         {
             Id = Submission.Id,
             TaskAssignmentId = Submission.TaskAssignmentId,
-            TaskAssignment = Submission.TaskAssignment,
-            Reviews = Submission.Reviews,
+            TaskAssignment = new TaskAssignmentResponseDTO
+                {
+                    Id = Submission.TaskAssignment.Id,
+                    TraineeId = Submission.TaskAssignment.TraineeId,
+                    MentorId = Submission.TaskAssignment.MentorId,
+                    LearningTaskId = Submission.TaskAssignment.LearningTaskId,
+                    AssignedDate = Submission.TaskAssignment.AssignedDate,
+                    DueDate = Submission.TaskAssignment.DueDate,
+                    Status = Submission.TaskAssignment.Status,
+                    Remarks = Submission.TaskAssignment?.Remarks
+                },
+            Reviews = Submission.Reviews.Select(r => new ReviewResponseDTO
+        {
+            Id = r.Id,
+            SubmissionId = r.SubmissionId,
+            MentorId = r.MentorId,
+            Feedback = r.Feedback,
+            Score = r.Score ?? null,
+            ReviewStatus = r.ReviewStatus,
+            ReviewedDate = r.ReviewedDate
+        }).ToList(),
             SubmissionUrl = Submission.SubmissionUrl,
             Notes = Submission.Notes,
             SubmittedDate = Submission.SubmittedDate,
@@ -37,7 +58,8 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
 
         if (desiredSubmission == null)
         {
-            return null;
+            _logger.LogError("Submission with the specified Id is not available.");
+            throw new NotFoundException($"Submission with the id - {id} not found");
         }
 
         return MapToSubmissionResponseDTO(desiredSubmission);
@@ -48,7 +70,6 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
     {
         Submission newSubmission = new()
         {
-            Id = _nextId,
             TaskAssignmentId = createSubmissionDto.TaskAssignmentId,
             SubmissionUrl = createSubmissionDto.SubmissionUrl,
             Notes = createSubmissionDto.Notes,
@@ -56,9 +77,13 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
             Status = createSubmissionDto.Status
         };
 
-        _nextId++;
-
         Submission CreatedSubmission = await _repo.CreateSubmissionAsync(newSubmission);
+
+        if (CreatedSubmission == null)
+        {
+            _logger.LogError("Something went wrong while creating a new Submission.");
+            throw new Exception("Something went wrong while creating a new Submission");
+        }
 
         return MapToSubmissionResponseDTO(CreatedSubmission);
 

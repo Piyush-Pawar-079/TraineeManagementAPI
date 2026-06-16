@@ -31,8 +31,7 @@ public class CreateTraineeRequestDTO
     public string TechStack { set; get; } = string.Empty;
 
     [Required(ErrorMessage = "Status is required.")]
-    [MinLength(1)]
     [EnumDataType(typeof(Status), ErrorMessage = "Status can only be Active, Inactive or Completed")]
-    public required string Status { set; get; }
+    public required Status Status { get; set; }
 
 }

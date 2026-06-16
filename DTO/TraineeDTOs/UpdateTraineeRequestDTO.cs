@@ -22,7 +22,6 @@ public class UpdateTraineeRequestDTO
     public string? TechStack { set; get; }
 
     [EnumDataType(typeof(Status), ErrorMessage = "Status can only be Active, Inactive or Completed")]
-    [MinLength(1)]
-    public string? Status { set; get; } 
+    public Status? Status { set; get; } 
     
 }

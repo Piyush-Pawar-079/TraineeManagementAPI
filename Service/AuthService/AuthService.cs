@@ -107,7 +107,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
         };
 
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration.GetValue<string>("Token:Key")!)
+            Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("Key")!)
         );
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);

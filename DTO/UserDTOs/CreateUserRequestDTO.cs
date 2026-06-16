@@ -26,6 +26,6 @@ public class CreateUserRequestDTO
 
     [Required(ErrorMessage = "Role is required.")]
     [EnumDataType(typeof(Role), ErrorMessage = "Role can only be Admin, Mentor or Trainee")]
-    public required String Role { get; set; }
+    public required Role Role { get; set; }
 
 }

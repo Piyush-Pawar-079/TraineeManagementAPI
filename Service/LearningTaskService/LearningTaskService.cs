@@ -1,4 +1,6 @@
 using traineeManagementAPI.DTO.LearningTaskDTOs;
+using traineeManagementAPI.DTO.TaskAssignmentDTOs;
+using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories.LearningTaskRepository;
 
@@ -8,7 +10,6 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 {
     private readonly ILearningTaskRepository _repo = repository;
     private readonly ILogger<LearningTaskService> _logger = logger;
-    private static int _nextId = 0;
 
     public LearningTaskResponseDTO MapToLearningTaskResponseDTO(LearningTask LearningTask)
     {
@@ -20,7 +21,17 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
             ExpectedTechStack = LearningTask.ExpectedTechStack,
             DueDate = LearningTask.DueDate,
             Status = LearningTask.Status,
-            TaskAssignment = LearningTask.TaskAssignments.Select(ta => ta).ToList(),
+            TaskAssignments = LearningTask.TaskAssignments.Select(ta => new TaskAssignmentResponseDTO
+                {
+                    Id = ta.Id,
+                    TraineeId = ta.TraineeId,
+                    MentorId = ta.MentorId,
+                    LearningTaskId = ta.LearningTaskId,
+                    AssignedDate = ta.AssignedDate,
+                    DueDate = ta.DueDate,
+                    Status = ta.Status,
+                    Remarks = ta?.Remarks
+                }).ToList(),
             CreatedDate = LearningTask.CreatedDate,
             UpdatedDate = LearningTask.UpdatedDate
         };
@@ -38,7 +49,8 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (desiredLearningTask == null)
         {
-            return null;
+            _logger.LogError("LearningTask with the specified Id is not available.");
+            throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
         return MapToLearningTaskResponseDTO(desiredLearningTask);
@@ -49,7 +61,6 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
     {
         LearningTask newLearningTask = new()
         {
-            Id = _nextId,
             Title = createLearningTaskDto.Title,
             Description = createLearningTaskDto.Description,
             ExpectedTechStack = createLearningTaskDto.ExpectedTechStack,
@@ -58,8 +69,6 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
             CreatedDate = DateTime.UtcNow,
             UpdatedDate = DateTime.UtcNow
         };
-
-        _nextId++;
 
         LearningTask CreatedLearningTask = await _repo.CreateAsync(newLearningTask);
 
@@ -73,7 +82,8 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (existingLearningTask == null)
         {
-            return null;
+            _logger.LogError("LearningTask with the specified Id is not available.");
+            throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
         if(updateLearningTaskDto.Title != null) 
@@ -88,17 +98,19 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
         if(updateLearningTaskDto.DueDate != null) 
             existingLearningTask.DueDate = updateLearningTaskDto.DueDate.Value;
         
-        if(updateLearningTaskDto.Status != null) 
-            existingLearningTask.Status = updateLearningTaskDto.Status;
+        if(updateLearningTaskDto.Status.HasValue) 
+            existingLearningTask.Status = updateLearningTaskDto.Status.Value;
 
         existingLearningTask.UpdatedDate = DateTime.UtcNow;
 
         var desiredTrainee = await _repo.UpdateAsync(id, existingLearningTask);
 
         if(desiredTrainee == null)
-            return null;
-
-        _logger.LogInformation("Trainee Updated Successfully");
+        {
+            _logger.LogError("Something went wrong while updating a new Learning Task.");
+            throw new Exception("Something went wrong while updating a new Learning Task");
+        }
+        _logger.LogInformation("Learning Task Updated Successfully");
         return MapToLearningTaskResponseDTO(desiredTrainee);
     }
 

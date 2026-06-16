@@ -1,8 +1,14 @@
+using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NSwag;
+using NSwag.Generation.Processors.Security;
+using DotNetEnv;
+
 using traineeManagementAPI.Data;
+using traineeManagementAPI.Exceptions;
 
 using traineeManagementAPI.Repositories.LearningTaskRepository;
 using traineeManagementAPI.Repositories.MentorRepository;
@@ -19,12 +25,11 @@ using traineeManagementAPI.Service.ReviewService;
 using traineeManagementAPI.Service.SubmissionService;
 using traineeManagementAPI.Service.TaskAssignmentService;
 using traineeManagementAPI.Service.TraineeService;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using NSwag;
-using NSwag.Generation.Processors.Security;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
 
 builder.Services.AddOpenApi();
 
@@ -48,7 +53,7 @@ builder.Services.AddControllers()
       );
    });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
  
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
@@ -71,11 +76,14 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration.GetValue<string>("Token:Issuer"),
             ValidAudience = builder.Configuration.GetValue<string>("Token:Audience"),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("Token:Key")!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("Key")!)),
             ClockSkew = TimeSpan.Zero,
             RoleClaimType = "Role"
         };
     });
+
+builder.Configuration
+    .AddEnvironmentVariables();
 
 builder.Services.AddOpenApiDocument(config =>
 {
@@ -128,6 +136,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -146,21 +156,21 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseExceptionHandler(options =>
-{
-    options.Run(async context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        context.Response.ContentType = "application/json";
+// app.UseExceptionHandler(options =>
+// {
+//     options.Run(async context =>
+//     {
+//         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+//         context.Response.ContentType = "application/json";
  
-        var exceptionFeature = context.Features.Get<IExceptionHandler>();
-        if (exceptionFeature is not null)
-        {
-            var error = new { message = "An unexpected error occurred. Please try again later." };
-            await context.Response.WriteAsJsonAsync(error);
-        }
-    });
-});
+//         var exceptionFeature = context.Features.Get<IExceptionHandler>();
+//         if (exceptionFeature is not null)
+//         {
+//             var error = new { message = "An unexpected error occurred. Please try again later." };
+//             await context.Response.WriteAsJsonAsync(error);
+//         }
+//     });
+// });
 
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");

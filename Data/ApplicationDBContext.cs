@@ -25,23 +25,22 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
     {
         base.OnModelCreating(modelBuilder);
 
+        // 
+
         modelBuilder.Entity<TaskAssignment>()
             .HasOne(ta => ta.Trainee)          // Each TaskAssignment has one Trainee
             .WithMany(t => t.TaskAssignments)        // Each Trainee has many TaskAssignments
-            .HasForeignKey(ta => ta.TraineeId) // Foreign key in TaskAssignment table
-            .OnDelete(DeleteBehavior.Cascade); // Cascade Null
+            .HasForeignKey(ta => ta.TraineeId); // Foreign key in TaskAssignment table
 
         modelBuilder.Entity<TaskAssignment>()
             .HasOne(ta => ta.Mentor)          // Each TaskAssignment has one Mentor
             .WithMany(m => m.TaskAssignments)        // Each Mentor has many TaskAssignments
-            .HasForeignKey(ta => ta.MentorId) // Foreign key in TaskAssignment table
-            .OnDelete(DeleteBehavior.Cascade); // Cascade Null
+            .HasForeignKey(ta => ta.MentorId); // Foreign key in TaskAssignment table
 
         modelBuilder.Entity<TaskAssignment>()
             .HasOne(ta => ta.LearningTask)          // Each TaskAssignemnt has one LearningTask
             .WithMany(t => t.TaskAssignments)        // Each LearningTask has many TaskAssignments
-            .HasForeignKey(ta => ta.LearningTaskId) // Foreign key in Task Assignment table
-            .OnDelete(DeleteBehavior.Cascade); // Cascade Null
+            .HasForeignKey(ta => ta.LearningTaskId); // Foreign key in Task Assignment table
 
         modelBuilder.Entity<Submission>()
             .HasOne(s => s.TaskAssignment)

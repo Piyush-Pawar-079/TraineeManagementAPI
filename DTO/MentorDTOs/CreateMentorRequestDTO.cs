@@ -25,5 +25,5 @@ public class CreateMentorRequestDTO
 
     [Required(ErrorMessage = "Status is required.")]
     [EnumDataType(typeof(MentorStatus), ErrorMessage = "Status can only be Active or Inactive")]
-    public required string Status { set; get; }
+    public required MentorStatus Status { set; get; }
 }

@@ -15,7 +15,6 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     private readonly ITraineeService _traineeService = traineeService;
     private readonly ILogger<TraineeController> _logger = logger;
 
-    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees([FromQuery] FilterDTO filters, [FromQuery]PaginationParams paginationParams)
     {
@@ -55,6 +54,9 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     [HttpPost]
     public async Task<ActionResult<TraineeResponseDTO>> CreateTrainee(CreateTraineeRequestDTO createDto)
     {
+        Console.WriteLine(createDto.Status);
+        Console.WriteLine(createDto.Status.GetType());
+        _logger.LogError(createDto.Status.ToString());
         return Ok(await _traineeService.CreateTrainee(createDto));
     }
 

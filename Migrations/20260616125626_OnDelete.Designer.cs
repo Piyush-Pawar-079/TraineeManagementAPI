@@ -12,8 +12,8 @@ using traineeManagementAPI.Data;
 namespace traineeManagementAPI.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260615063404_NewMigrations")]
-    partial class NewMigrations
+    [Migration("20260616125626_OnDelete")]
+    partial class OnDelete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,9 +47,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -90,9 +89,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime(6)");
@@ -117,9 +115,8 @@ namespace traineeManagementAPI.Migrations
                     b.Property<int>("MentorId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ReviewStatus")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("ReviewStatus")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ReviewedDate")
                         .HasColumnType("datetime(6)");
@@ -151,9 +148,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("SubmissionUrl")
                         .IsRequired()
@@ -195,9 +191,8 @@ namespace traineeManagementAPI.Migrations
                     b.Property<string>("Remarks")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("TraineeId")
                         .HasColumnType("int");
@@ -236,9 +231,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("TechStack")
                         .IsRequired()
@@ -271,9 +265,8 @@ namespace traineeManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime(6)");
