@@ -4,13 +4,13 @@ namespace traineeManagementAPI.Service.LearningTaskService;
 
 public interface ILearningTaskService
 {
-    Task<List<LearningTaskResponseDTO>> GetAllAsync();
+    Task<List<LearningTaskDetailDTO>> GetAllAsync();
 
-    Task<LearningTaskResponseDTO?> GetByIdAsync(int id);
+    Task<LearningTaskDetailDTO?> GetByIdAsync(int id);
 
-    Task<LearningTaskResponseDTO> CreateAsync(CreateLearningTaskRequestDTO createLearningTaskDto);
+    Task<LearningTaskDetailDTO> CreateAsync(CreateLearningTaskRequestDTO createLearningTaskDto);
 
-    Task<LearningTaskResponseDTO?> UpdateAsync(int id, UpdateLearningTaskRequestDTO updateLearningTaskDto);
+    Task<LearningTaskDetailDTO?> UpdateAsync(int id, UpdateLearningTaskRequestDTO updateLearningTaskDto);
 
     Task<bool> DeleteAsync(int id);
 

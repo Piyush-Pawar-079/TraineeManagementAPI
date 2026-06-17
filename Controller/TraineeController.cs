@@ -16,13 +16,13 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     private readonly ILogger<TraineeController> _logger = logger;
 
     [HttpGet]
-    public async Task<ActionResult<List<TraineeResponseDTO>>> GetAllTrainees([FromQuery] FilterDTO filters, [FromQuery]PaginationParams paginationParams)
+    public async Task<ActionResult<List<TraineeDetailDTO>>> GetAllTrainees([FromQuery] FilterDTO filters, [FromQuery]PaginationParams paginationParams)
     {
         return await _traineeService.GetAllAsyncWithFilters(filters, paginationParams);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<TraineeResponseDTO?>> GetTraineeById(int id)
+    public async Task<ActionResult<TraineeDetailDTO?>> GetTraineeById(int id)
     {
         var trainee = await _traineeService.GetTraineeById(id);
 
@@ -37,7 +37,7 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<TraineeResponseDTO?>> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
+    public async Task<ActionResult<TraineeDetailDTO?>> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
         
         var updatedTrainee = await _traineeService.UpdateTrainee(id, updateDto);
@@ -52,7 +52,7 @@ public class TraineeController(ITraineeService traineeService, ILogger<TraineeCo
     }
 
     [HttpPost]
-    public async Task<ActionResult<TraineeResponseDTO>> CreateTrainee(CreateTraineeRequestDTO createDto)
+    public async Task<ActionResult<TraineeDetailDTO>> CreateTrainee(CreateTraineeRequestDTO createDto)
     {
         Console.WriteLine(createDto.Status);
         Console.WriteLine(createDto.Status.GetType());

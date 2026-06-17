@@ -5,10 +5,11 @@ using traineeManagementAPI.Model;
 using traineeManagementAPI.DTO.HelperDTOs;
 using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.DTO.TaskAssignmentDTOs;
+using AutoMapper;
 
 namespace traineeManagementAPI.Service.TraineeService;
 
-public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger) : ITraineeService
+public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger, IMapper mapper) : ITraineeService
 {
 
     private class SortFields
@@ -22,42 +23,17 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     private readonly ITraineeRepository _repository = repository;
     private readonly ILogger<TraineeService> _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
-    public TraineeResponseDTO MapToDTO(Trainee trainee)
-    {
-        return new TraineeResponseDTO
-        {
-            Id = trainee.Id,
-            FirstName = trainee.FirstName,
-            LastName = trainee.LastName,
-            Email = trainee.Email,
-            TechStack = trainee.TechStack,
-            Status = trainee.Status,
-            TaskAssignment = trainee.TaskAssignments.Select(ta => new TaskAssignmentResponseDTO
-                {
-                    Id = ta.Id,
-                    TraineeId = ta.TraineeId,
-                    MentorId = ta.MentorId,
-                    LearningTaskId = ta.LearningTaskId,
-                    AssignedDate = ta.AssignedDate,
-                    DueDate = ta.DueDate,
-                    Status = ta.Status,
-                    Remarks = ta?.Remarks
-                }).ToList(),            
-            CreatedDate = trainee.CreatedDate,
-            UpdatedDate = trainee.UpdatedDate
-        };
-    }
-
-    public async Task<List<TraineeResponseDTO>> GetAllTrainees()
+    public async Task<List<TraineeDetailDTO>> GetAllTrainees()
     {
         var trainee = await _repository.GetAllAsync();
 
-        return trainee.Select(MapToDTO).ToList();
+        return _mapper.Map<List<TraineeDetailDTO>>(trainee);
         
     }
 
-    public async Task<TraineeResponseDTO?> GetTraineeById(int id)
+    public async Task<TraineeDetailDTO?> GetTraineeById(int id)
     {
         var trainee = await _repository.GetByIdAsync(id);
 
@@ -67,11 +43,11 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
-        return MapToDTO(trainee);
+        return _mapper.Map<TraineeDetailDTO>(trainee);
 
     }
 
-    public async Task<TraineeResponseDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
+    public async Task<TraineeDetailDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
         var existingTrainee = await _repository.GetByIdAsync(id);
 
@@ -107,29 +83,31 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
         }
 
         _logger.LogInformation("Trainee Updated Successfully");
-        return MapToDTO(desiredTrainee);
+        return _mapper.Map<TraineeDetailDTO>(desiredTrainee);
 
     }
 
-    public async Task<TraineeResponseDTO> CreateTrainee(CreateTraineeRequestDTO trainee)
+    public async Task<TraineeDetailDTO> CreateTrainee(CreateTraineeRequestDTO trainee)
     {
         Console.WriteLine(trainee.Status);
         Console.WriteLine(trainee.Status.GetType());
-        var newTrainee = new Trainee
-        {
-            FirstName = trainee.FirstName,
-            LastName = trainee.LastName,
-            Email = trainee.Email,
-            TechStack = trainee.TechStack,
-            Status = trainee.Status,
-            CreatedDate = DateTime.UtcNow,
-            UpdatedDate = DateTime.UtcNow
-        };
+        // var newTrainee = new Trainee
+        // {
+        //     FirstName = trainee.FirstName,
+        //     LastName = trainee.LastName,
+        //     Email = trainee.Email,
+        //     TechStack = trainee.TechStack,
+        //     Status = trainee.Status,
+        //     CreatedDate = DateTime.UtcNow,
+        //     UpdatedDate = DateTime.UtcNow
+        // };
+
+        var newTrainee = _mapper.Map<Trainee>(trainee);
 
         var createdTrainee = await _repository.CreateAsync(newTrainee);
 
         _logger.LogInformation("Trainee Created Successfully");
-        return MapToDTO(createdTrainee);
+        return _mapper.Map<TraineeDetailDTO>(createdTrainee);
     }
 
     public async Task<bool> DeleteTrainee(int id)
@@ -179,7 +157,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
         return paginatedResponse.Data.ToList();
     }
 
-    public async Task<List<TraineeResponseDTO>> GetAllAsyncWithFilters(FilterDTO filters, PaginationParams paginationParams)
+    public async Task<List<TraineeDetailDTO>> GetAllAsyncWithFilters(FilterDTO filters, PaginationParams paginationParams)
     {
         var allTrainees = await _repository.GetAllAsync();
 
@@ -203,7 +181,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
             allTrainees = await GetTraineeUsingPagination(paginationParams, allTrainees);
         }
 
-        return allTrainees.Select(MapToDTO).ToList();
+        return _mapper.Map<List<TraineeDetailDTO>>(allTrainees);
 
     }
 

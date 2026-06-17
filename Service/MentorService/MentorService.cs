@@ -1,3 +1,4 @@
+using AutoMapper;
 using Azure.Core;
 using traineeManagementAPI.DTO.MentorDTOs;
 using traineeManagementAPI.DTO.ReviewDTOs;
@@ -8,54 +9,19 @@ using traineeManagementAPI.Repositories.MentorRepository;
 
 namespace traineeManagementAPI.Service.MentorService;
 
-public class MentorService(IMentorRepository repository, ILogger<MentorService> logger) : IMentorService
+public class MentorService(IMentorRepository repository, ILogger<MentorService> logger, IMapper mapper) : IMentorService
 {
     private readonly IMentorRepository _repo = repository;
     private readonly ILogger<MentorService> _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
-    public MentorResponseDTO MapToMentorResponseDTO(Mentor mentor)
-    {
-        return new MentorResponseDTO
-        {
-            Id = mentor.Id,
-            FirstName = mentor.FirstName,
-            LastName = mentor.LastName,
-            Email = mentor.Email,
-            Expertise = mentor.Expertise,
-            Status = mentor.Status,
-            TaskAssignments = mentor.TaskAssignments.Select(ta => new TaskAssignmentResponseDTO
-        {
-            Id = ta.Id,
-            TraineeId = ta.TraineeId,
-            MentorId = ta.MentorId,
-            LearningTaskId = ta.LearningTaskId,
-            AssignedDate = ta.AssignedDate,
-            DueDate = ta.DueDate,
-            Status = ta.Status,
-            Remarks = ta?.Remarks
-        }).ToList(),
-            Reviews = mentor.Reviews.Select(r => new ReviewResponseDTO
-        {
-            Id = r.Id,
-            SubmissionId = r.SubmissionId,
-            MentorId = r.MentorId,
-            Feedback = r.Feedback,
-            Score = r.Score ?? null,
-            ReviewStatus = r.ReviewStatus,
-            ReviewedDate = r.ReviewedDate
-        }).ToList(),
-            CreatedDate = mentor.CreatedDate,
-            UpdatedDate = mentor.UpdatedDate
-        };
-    }
-
-    public async Task<List<MentorResponseDTO>> GetAllAsync()
+    public async Task<List<MentorDetailDTO>> GetAllAsync()
     {
         var allMentors = await _repo.GetAllAsync();
-        return allMentors.Select(MapToMentorResponseDTO).ToList();
+        return _mapper.Map<List<MentorDetailDTO>>(allMentors);
     }
 
-    public async Task<MentorResponseDTO?> GetByIdAsync(int id)
+    public async Task<MentorDetailDTO?> GetByIdAsync(int id)
     {
         var desiredMentor = await _repo.GetByIdAsync(id);
 
@@ -65,30 +31,32 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
             throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
-        return MapToMentorResponseDTO(desiredMentor);
+        return _mapper.Map<MentorDetailDTO>(desiredMentor);
 
     }
 
-    public async Task<MentorResponseDTO> CreateAsync(CreateMentorRequestDTO createMentorDto)
+    public async Task<MentorDetailDTO> CreateAsync(CreateMentorRequestDTO createMentorDto)
     {
-        Mentor newMentor = new()
-        {
-            FirstName = createMentorDto.FirstName,
-            LastName = createMentorDto.LastName,
-            Email = createMentorDto.Email,
-            Expertise = createMentorDto.Expertise,
-            Status = createMentorDto.Status,
-            CreatedDate = DateTime.UtcNow,
-            UpdatedDate = DateTime.UtcNow
-        };
+        // Mentor newMentor = new()
+        // {
+        //     FirstName = createMentorDto.FirstName,
+        //     LastName = createMentorDto.LastName,
+        //     Email = createMentorDto.Email,
+        //     Expertise = createMentorDto.Expertise,
+        //     Status = createMentorDto.Status,
+        //     CreatedDate = DateTime.UtcNow,
+        //     UpdatedDate = DateTime.UtcNow
+        // };
+
+        Mentor newMentor = _mapper.Map<Mentor>(createMentorDto);
 
         Mentor CreatedMentor = await _repo.CreateAsync(newMentor);
 
-        return MapToMentorResponseDTO(CreatedMentor);
+        return _mapper.Map<MentorDetailDTO>(CreatedMentor);
 
     }
 
-    public async Task<MentorResponseDTO?> UpdateAsync(int id, UpdateMentorRequestDTO updateMentorDto)
+    public async Task<MentorDetailDTO?> UpdateAsync(int id, UpdateMentorRequestDTO updateMentorDto)
     {
         var existingMentor = await _repo.GetByIdAsync(id);
 
@@ -124,7 +92,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
         }
 
         _logger.LogInformation("Mentor Updated Successfully");
-        return MapToMentorResponseDTO(desiredTrainee);
+        return _mapper.Map<MentorDetailDTO>(desiredTrainee);
     }
 
     public async Task<bool> DeleteAsync(int id)

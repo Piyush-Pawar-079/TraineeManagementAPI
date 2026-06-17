@@ -14,13 +14,13 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     private readonly ILogger<TaskAssignmentController> _logger = logger;
 
     [HttpGet]
-    public async Task<ActionResult<List<TaskAssignmentResponseDTO>>> GetAllTaskAssignments()
+    public async Task<ActionResult<List<TaskAssignmentDetailDTO>>> GetAllTaskAssignments()
     {
         return await _taskAssignmentService.GetAllAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<TaskAssignmentResponseDTO?>> GetTaskAssignmentById(int id)
+    public async Task<ActionResult<TaskAssignmentDetailDTO?>> GetTaskAssignmentById(int id)
     {
         var TaskAssignment = await _taskAssignmentService.GetByIdAsync(id);
         return Ok(TaskAssignment);
@@ -28,14 +28,14 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<TaskAssignmentResponseDTO?>> UpdateTaskAssignment(int id, UpdateTaskAssignmentRequestDTO updateDto)
+    public async Task<ActionResult<TaskAssignmentDetailDTO?>> UpdateTaskAssignment(int id, UpdateTaskAssignmentRequestDTO updateDto)
     {
         var updatedTaskAssignment = await _taskAssignmentService.UpdateAsync(id, updateDto);
         return Ok(updatedTaskAssignment);
     }
 
     [HttpPost]
-    public async Task<ActionResult<TaskAssignmentResponseDTO>> CreateTaskAssignment(CreateTaskAssignmentRequestDTO createDto)
+    public async Task<ActionResult<TaskAssignmentDetailDTO>> CreateTaskAssignment(CreateTaskAssignmentRequestDTO createDto)
     {
         return Ok(await _taskAssignmentService.CreateAsync(createDto));
     }

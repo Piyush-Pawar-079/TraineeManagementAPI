@@ -11,9 +11,8 @@ public enum SubmissionStatus
 public class Submission
 {
     public int Id { get; set; } // auto-generated
-    public required int TaskAssignmentId { get; set; } 
-    [JsonIgnore]
-    public TaskAssignment? TaskAssignment { get; set; } 
+    public required int TaskAssignmentId { get; set; }
+    public TaskAssignment TaskAssignment { get; set; } = null!; 
     public required string SubmissionUrl { get; set; }
     public required string Notes { get; set; }
     public required DateTime SubmittedDate { get; set; }

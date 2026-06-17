@@ -4,9 +4,9 @@ namespace traineeManagementAPI.Service.SubmissionService;
 
 public interface ISubmissionService
 {
-    Task<List<SubmissionResponseDTO>> GetAllAsync();
+    Task<List<SubmissionDetailDTO>> GetAllAsync();
 
-    Task<SubmissionResponseDTO?> GetByIdAsync(int id);
+    Task<SubmissionDetailDTO?> GetByIdAsync(int id);
 
-    Task<SubmissionResponseDTO> CreateAsync(CreateSubmissionRequestDTO createSubmissionDto);
+    Task<SubmissionDetailDTO> CreateAsync(CreateSubmissionRequestDTO createSubmissionDto);
 }

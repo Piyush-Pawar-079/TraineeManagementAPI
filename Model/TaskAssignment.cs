@@ -16,14 +16,11 @@ public class TaskAssignment : IValidatableObject
 {
     public int Id { get; set; } // auto-generated
     public required int TraineeId { get; set; }
-    [JsonIgnore]
-    public Trainee? Trainee { get; set; }
+    public Trainee Trainee { get; set; } = null!;
     public required int MentorId { get; set; }
-    [JsonIgnore]
-    public Mentor? Mentor { get; set; }
+    public Mentor Mentor { get; set; } = null!;
     public required int LearningTaskId { get; set; } 
-    [JsonIgnore]
-    public LearningTask? LearningTask { get; set; }
+    public LearningTask LearningTask { get; set; } = null!;
     public List<Submission> Submission { get; set; } = [];
     public DateTime AssignedDate { get; set; }
     public DateTime DueDate { get; set; }

@@ -4,9 +4,9 @@ namespace traineeManagementAPI.Service.ReviewService;
 
 public interface IReviewService
 {
-    Task<List<ReviewResponseDTO>> GetAllAsync();
+    Task<List<ReviewDetailDTO>> GetAllAsync();
 
-    Task<ReviewResponseDTO?> GetByIdAsync(int id);
+    Task<ReviewDetailDTO?> GetByIdAsync(int id);
 
-    Task<ReviewResponseDTO> CreateAsync(CreateReviewRequestDTO createReviewDto);
+    Task<ReviewDetailDTO> CreateAsync(CreateReviewRequestDTO createReviewDto);
 }

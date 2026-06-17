@@ -4,13 +4,11 @@ using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.ReviewDTOs;
 
-public class ReviewResponseDTO
+public class ReviewDetailDTO
 {
     public int Id { get; set; }
-    public int SubmissionId { get; set; } 
-    public SubmissionResponseDTO? Submission { get; set; }
-    public int MentorId { get; set; }
-    public MentorResponseDTO? Mentor { get; set; }
+    public SubmissionBasicDTO Submission { get; set; } = null!;
+    public MentorBasicDTO Mentor { get; set; } = null!;
     public required string Feedback { get; set; }
     public int? Score { get; set; }
     public required ReviewStatus ReviewStatus { get; set; }

@@ -25,6 +25,7 @@ using traineeManagementAPI.Service.ReviewService;
 using traineeManagementAPI.Service.SubmissionService;
 using traineeManagementAPI.Service.TaskAssignmentService;
 using traineeManagementAPI.Service.TraineeService;
+using traineeManagementAPI.Mappings;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -106,6 +107,8 @@ builder.Services.AddOpenApiDocument(config =>
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddScoped<ITraineeRepository, TraineeRepository>();
 builder.Services.AddScoped<ITraineeService, TraineeService>();

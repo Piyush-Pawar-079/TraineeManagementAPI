@@ -4,11 +4,11 @@ namespace traineeManagementAPI.Service.TaskAssignmentService;
 
 public interface ITaskAssignmentService
 {
-    Task<List<TaskAssignmentResponseDTO>> GetAllAsync();
+    Task<List<TaskAssignmentDetailDTO>> GetAllAsync();
 
-    Task<TaskAssignmentResponseDTO?> GetByIdAsync(int id);
+    Task<TaskAssignmentDetailDTO?> GetByIdAsync(int id);
 
-    Task<TaskAssignmentResponseDTO> CreateAsync(CreateTaskAssignmentRequestDTO createTaskAssignmentDto);
+    Task<TaskAssignmentDetailDTO> CreateAsync(CreateTaskAssignmentRequestDTO createTaskAssignmentDto);
 
-    Task<TaskAssignmentResponseDTO?> UpdateAsync(int id, UpdateTaskAssignmentRequestDTO updateTaskAssignmentDto);
+    Task<TaskAssignmentDetailDTO?> UpdateAsync(int id, UpdateTaskAssignmentRequestDTO updateTaskAssignmentDto);
 }

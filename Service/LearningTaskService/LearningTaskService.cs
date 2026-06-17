@@ -1,3 +1,4 @@
+using AutoMapper;
 using traineeManagementAPI.DTO.LearningTaskDTOs;
 using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Exceptions;
@@ -6,44 +7,19 @@ using traineeManagementAPI.Repositories.LearningTaskRepository;
 
 namespace traineeManagementAPI.Service.LearningTaskService;
 
-public class LearningTaskService(ILearningTaskRepository repository, ILogger<LearningTaskService> logger) : ILearningTaskService
+public class LearningTaskService(ILearningTaskRepository repository, ILogger<LearningTaskService> logger, IMapper mapper) : ILearningTaskService
 {
     private readonly ILearningTaskRepository _repo = repository;
     private readonly ILogger<LearningTaskService> _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
-    public LearningTaskResponseDTO MapToLearningTaskResponseDTO(LearningTask LearningTask)
-    {
-        return new LearningTaskResponseDTO
-        {
-            Id = LearningTask.Id,
-            Title = LearningTask.Title,
-            Description = LearningTask.Description,
-            ExpectedTechStack = LearningTask.ExpectedTechStack,
-            DueDate = LearningTask.DueDate,
-            Status = LearningTask.Status,
-            TaskAssignments = LearningTask.TaskAssignments.Select(ta => new TaskAssignmentResponseDTO
-                {
-                    Id = ta.Id,
-                    TraineeId = ta.TraineeId,
-                    MentorId = ta.MentorId,
-                    LearningTaskId = ta.LearningTaskId,
-                    AssignedDate = ta.AssignedDate,
-                    DueDate = ta.DueDate,
-                    Status = ta.Status,
-                    Remarks = ta?.Remarks
-                }).ToList(),
-            CreatedDate = LearningTask.CreatedDate,
-            UpdatedDate = LearningTask.UpdatedDate
-        };
-    }
-
-    public async Task<List<LearningTaskResponseDTO>> GetAllAsync()
+    public async Task<List<LearningTaskDetailDTO>> GetAllAsync()
     {
         var allLearningTasks = await _repo.GetAllAsync();
-        return allLearningTasks.Select(MapToLearningTaskResponseDTO).ToList();
+        return _mapper.Map<List<LearningTaskDetailDTO>>(allLearningTasks);
     }
 
-    public async Task<LearningTaskResponseDTO?> GetByIdAsync(int id)
+    public async Task<LearningTaskDetailDTO?> GetByIdAsync(int id)
     {
         var desiredLearningTask = await _repo.GetByIdAsync(id);
 
@@ -53,30 +29,32 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
             throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
-        return MapToLearningTaskResponseDTO(desiredLearningTask);
+        return _mapper.Map<LearningTaskDetailDTO>(desiredLearningTask);
 
     }
 
-    public async Task<LearningTaskResponseDTO> CreateAsync(CreateLearningTaskRequestDTO createLearningTaskDto)
+    public async Task<LearningTaskDetailDTO> CreateAsync(CreateLearningTaskRequestDTO createLearningTaskDto)
     {
-        LearningTask newLearningTask = new()
-        {
-            Title = createLearningTaskDto.Title,
-            Description = createLearningTaskDto.Description,
-            ExpectedTechStack = createLearningTaskDto.ExpectedTechStack,
-            DueDate = createLearningTaskDto.DueDate,
-            Status = createLearningTaskDto.Status,
-            CreatedDate = DateTime.UtcNow,
-            UpdatedDate = DateTime.UtcNow
-        };
+        // LearningTask newLearningTask = new()
+        // {
+        //     Title = createLearningTaskDto.Title,
+        //     Description = createLearningTaskDto.Description,
+        //     ExpectedTechStack = createLearningTaskDto.ExpectedTechStack,
+        //     DueDate = createLearningTaskDto.DueDate,
+        //     Status = createLearningTaskDto.Status,
+        //     CreatedDate = DateTime.UtcNow,
+        //     UpdatedDate = DateTime.UtcNow
+        // };
+
+        LearningTask newLearningTask = _mapper.Map<LearningTask>(createLearningTaskDto);
 
         LearningTask CreatedLearningTask = await _repo.CreateAsync(newLearningTask);
 
-        return MapToLearningTaskResponseDTO(CreatedLearningTask);
+        return _mapper.Map<LearningTaskDetailDTO>(CreatedLearningTask);
 
     }
 
-    public async Task<LearningTaskResponseDTO?> UpdateAsync(int id, UpdateLearningTaskRequestDTO updateLearningTaskDto)
+    public async Task<LearningTaskDetailDTO?> UpdateAsync(int id, UpdateLearningTaskRequestDTO updateLearningTaskDto)
     {
         var existingLearningTask = await _repo.GetByIdAsync(id);
 
@@ -111,7 +89,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
             throw new Exception("Something went wrong while updating a new Learning Task");
         }
         _logger.LogInformation("Learning Task Updated Successfully");
-        return MapToLearningTaskResponseDTO(desiredTrainee);
+        return _mapper.Map<LearningTaskDetailDTO>(desiredTrainee);
     }
 
     public async Task<bool> DeleteAsync(int id)

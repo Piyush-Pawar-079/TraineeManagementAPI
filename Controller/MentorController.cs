@@ -14,27 +14,27 @@ public class MentorController(IMentorService mentorService, ILogger<MentorContro
     private readonly ILogger<MentorController> _logger = logger;
 
     [HttpGet]
-    public async Task<ActionResult<List<MentorResponseDTO>>> GetAllMentors()
+    public async Task<ActionResult<List<MentorDetailDTO>>> GetAllMentors()
     {
         return await _mentorService.GetAllAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<MentorResponseDTO?>> GetMentorById(int id)
+    public async Task<ActionResult<MentorDetailDTO?>> GetMentorById(int id)
     {
         var mentor = await _mentorService.GetByIdAsync(id);
         return Ok(mentor);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<MentorResponseDTO?>> UpdateMentor(int id, UpdateMentorRequestDTO updateDto)
+    public async Task<ActionResult<MentorDetailDTO?>> UpdateMentor(int id, UpdateMentorRequestDTO updateDto)
     {
         var updatedMentor = await _mentorService.UpdateAsync(id, updateDto);
         return Ok(updatedMentor);
     }
 
     [HttpPost]
-    public async Task<ActionResult<MentorResponseDTO>> CreateMentor(CreateMentorRequestDTO createDto)
+    public async Task<ActionResult<MentorDetailDTO>> CreateMentor(CreateMentorRequestDTO createDto)
     {
         return Ok(await _mentorService.CreateAsync(createDto));
     }

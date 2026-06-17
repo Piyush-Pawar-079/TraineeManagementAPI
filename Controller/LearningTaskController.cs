@@ -14,27 +14,27 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
     private readonly ILogger<LearningTaskController> _logger = logger;
 
     [HttpGet]
-    public async Task<ActionResult<List<LearningTaskResponseDTO>>> GetAllLearningTasks()
+    public async Task<ActionResult<List<LearningTaskDetailDTO>>> GetAllLearningTasks()
     {
         return await _LearningTaskService.GetAllAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<LearningTaskResponseDTO?>> GetLearningTaskById(int id)
+    public async Task<ActionResult<LearningTaskDetailDTO?>> GetLearningTaskById(int id)
     {
         var LearningTask = await _LearningTaskService.GetByIdAsync(id);
         return Ok(LearningTask);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<LearningTaskResponseDTO?>> UpdateLearningTask(int id, UpdateLearningTaskRequestDTO updateDto)
+    public async Task<ActionResult<LearningTaskDetailDTO?>> UpdateLearningTask(int id, UpdateLearningTaskRequestDTO updateDto)
     {
         var updatedLearningTask = await _LearningTaskService.UpdateAsync(id, updateDto);
         return Ok(updatedLearningTask);
     }
 
     [HttpPost]
-    public async Task<ActionResult<LearningTaskResponseDTO>> CreateLearningTask(CreateLearningTaskRequestDTO createDto)
+    public async Task<ActionResult<LearningTaskDetailDTO>> CreateLearningTask(CreateLearningTaskRequestDTO createDto)
     {
         return Ok(await _LearningTaskService.CreateAsync(createDto));
     }
