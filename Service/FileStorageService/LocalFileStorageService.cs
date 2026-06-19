@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using AutoMapper;
 using traineeManagementAPI.DTO.SubmissionFileDTOs;
 using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Model;
@@ -11,13 +12,15 @@ public class LocalFileStorageService: IFileStorageService
     private readonly ISubmissionFileRepository _repo;
     private readonly string _uploadPath;
     private readonly ILogger<LocalFileStorageService> _logger;
-    private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt"];
+    private readonly IMapper _mapper;
+    private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt", ".zip"];
 
-    public LocalFileStorageService(IWebHostEnvironment env, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger)
+    public LocalFileStorageService(IWebHostEnvironment env, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper)
     {
         _repo = repo;
         _logger = logger;
         _uploadPath = "uploads";
+        _mapper = mapper;
 
         if (!Directory.Exists(_uploadPath))
         {
@@ -25,18 +28,18 @@ public class LocalFileStorageService: IFileStorageService
         }
     }
 
-    public async Task<SubmissionFile> SaveAsync(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken)
+    public async Task<SubmissionFileResponseDTO> SaveAsync(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken)
     {
         if (createDTO.File == null || createDTO.File.Length == 0)
         {
             _logger.LogError("File upload failed");
             throw new ArgumentException("No file selected to upload");
         }
-        if (createDTO.File.Length > 5 * 1024 * 1024)
-        {
-            _logger.LogError("File upload failed, file is too large");
-            throw new BadRequestException("File too large. Max 5 MB allowed.");
-        }
+        // if (createDTO.File.Length > 5 * 1024 * 1024)
+        // {
+        //     _logger.LogError("File upload failed, file is too large");
+        //     throw new BadRequestException("File too large. Max 5 MB allowed.");
+        // }
 
         var extention = Path.GetExtension(createDTO.File.FileName).ToLowerInvariant();
 
@@ -73,7 +76,8 @@ public class LocalFileStorageService: IFileStorageService
             throw new Exception("Something went wrong while saving the file to the database");
         }
         _logger.LogInformation("File saved successfully");
-        return result;
+
+        return _mapper.Map<SubmissionFileResponseDTO>(result);
     }
 
     public async Task<(byte[] bytes, string contentType, string fileName)> OpenReadAsync(int id)
@@ -97,7 +101,7 @@ public class LocalFileStorageService: IFileStorageService
 
         byte[] bytes = File.ReadAllBytes(filePath);
 
-        return (bytes, file.ContentType, file.GeneratedFileName);
+        return (bytes, file.ContentType, file.OriginalFileName);
     }
 
     public string GenerateFileChecksum(string filePath)

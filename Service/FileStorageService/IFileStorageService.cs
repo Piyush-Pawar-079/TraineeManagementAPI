@@ -5,7 +5,7 @@ namespace traineeManagementAPI.Service.FileStorageService;
 
 public interface IFileStorageService
 {
-    Task<SubmissionFile> SaveAsync(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken);
+    Task<SubmissionFileResponseDTO> SaveAsync(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken);
 
     Task<(byte[] bytes, string contentType, string fileName)> OpenReadAsync(int id);
 

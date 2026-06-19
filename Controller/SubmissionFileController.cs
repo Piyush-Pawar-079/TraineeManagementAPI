@@ -12,11 +12,11 @@ public class SubmissionFileController(IFileStorageService fileStorageService) : 
 
     private readonly IFileStorageService _fileStorageService = fileStorageService;
 
-    [HttpGet]
-    public async Task<bool> FileExists(int id)
-    {
-        return await _fileStorageService.ExistsAsync(id);
-    }
+    // [HttpGet]
+    // public async Task<bool> FileExists(int id)
+    // {
+    //     return await _fileStorageService.ExistsAsync(id);
+    // }
 
     [HttpGet("{id}/download")]
     public async Task<IActionResult> DownloadFile(int id)

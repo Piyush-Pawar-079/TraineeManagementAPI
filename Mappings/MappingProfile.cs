@@ -7,6 +7,7 @@ using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.DTO.SubmissionDTOs;
 using traineeManagementAPI.DTO.ReviewDTOs;
 using traineeManagementAPI.DTO.UserDTOs;
+using traineeManagementAPI.DTO.SubmissionFileDTOs;
 
 namespace traineeManagementAPI.Mappings;
 
@@ -54,5 +55,8 @@ public class MappingProfile : Profile
 
         CreateMap<Review, ReviewBasicDTO>();
         CreateMap<Review, ReviewDetailDTO>();
+    
+        CreateMap<SubmissionFile, SubmissionFileResponseDTO>();
+
     }
 }
