@@ -64,15 +64,15 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
             throw new NotFoundException($"User with the username {loginDTO.Username} not found");
         }
 
-        // CreateUserRequestDTO userRequestDTO = new CreateUserRequestDTO
-        // {
-        //     Username = found.Username,
-        //     Password = found.PasswordHash,
-        //     Email = found.Email,
-        //     Role = found.Role
-        // };
+        CreateUserRequestDTO userRequestDTO = new()
+        {
+            Username = found.Username,
+            Password = found.PasswordHash,
+            Email = found.Email,
+            Role = found.Role
+        };
 
-        var userRequestDTO = _mapper.Map<CreateUserRequestDTO>(found);
+        // var userRequestDTO = _mapper.Map<CreateUserRequestDTO>(found);
 
         if (new PasswordHasher<CreateUserRequestDTO>().VerifyHashedPassword(userRequestDTO, userRequestDTO.Password, loginDTO.Password)
             == PasswordVerificationResult.Failed

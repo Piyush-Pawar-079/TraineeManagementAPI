@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using traineeManagementAPI.DTO.SubmissionDTOs;
+using traineeManagementAPI.DTO.SubmissionFileDTOs;
+using traineeManagementAPI.Service.FileStorageService;
 using traineeManagementAPI.Service.SubmissionService;
 
 namespace traineeManagementAPI.Controller;
@@ -8,9 +10,10 @@ namespace traineeManagementAPI.Controller;
 [Authorize]
 [ApiController]
 [Route("api/submissions")]
-public class SubmissionController(ISubmissionService submissionService) : ControllerBase
+public class SubmissionController(ISubmissionService submissionService, IFileStorageService fileStorageService) : ControllerBase
 {
     private readonly ISubmissionService _submissionService = submissionService;
+    private readonly IFileStorageService _fileStorageService = fileStorageService;
 
     [HttpGet]
     public async Task<ActionResult> GetAllSubmission()
@@ -18,7 +21,7 @@ public class SubmissionController(ISubmissionService submissionService) : Contro
         return Ok(await _submissionService.GetAllAsync());
     }
 
-    [HttpGet("id")]
+    [HttpGet("{id}")]
     public async Task<ActionResult> GetById(int id)
     {
         return Ok(await _submissionService.GetByIdAsync(id));
@@ -28,6 +31,12 @@ public class SubmissionController(ISubmissionService submissionService) : Contro
     public async Task<ActionResult> CreateSubmission(CreateSubmissionRequestDTO createSubmissionDTO)
     {
         return Ok(await _submissionService.CreateAsync(createSubmissionDTO));
+    }
+
+    [HttpPost("{submissionId}/files")]
+    public async Task<ActionResult> UploadSubmissionFile(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken)
+    {
+        return Ok(await _fileStorageService.SaveAsync(submissionId, createDTO, cancellationToken));
     }
 
 }

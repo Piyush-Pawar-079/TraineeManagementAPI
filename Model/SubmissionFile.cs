@@ -6,8 +6,8 @@ public class SubmissionFile
     public string OriginalFileName { get; set; } = "";
     public string GeneratedFileName { get; set; } = "";
     public string ContentType { get; set; } = "";
-    public int Size { get; set; }
-    public int CheckSum { get; set; }
+    public long Size { get; set; }
+    public string CheckSum { get; set; } = "";
     public string OwnerName { get; set; } = "";
     public int SubmissionId { get; set; }
     public Submission Submission { get; set; } = null!;

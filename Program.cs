@@ -26,6 +26,8 @@ using traineeManagementAPI.Service.SubmissionService;
 using traineeManagementAPI.Service.TaskAssignmentService;
 using traineeManagementAPI.Service.TraineeService;
 using traineeManagementAPI.Mappings;
+using traineeManagementAPI.Service.FileStorageService;
+using traineeManagementAPI.Repositories.SubmissionFileRepository;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -131,8 +133,8 @@ builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 
-builder.Logging.AddConsole(); // for loggin
-builder.Logging.AddDebug();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<ISubmissionFileRepository, SubmissionFileRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -147,6 +149,8 @@ app.UseAuthorization();
 app.UseOpenApi();
 app.UseSwaggerUI();
 
+app.UseStaticFiles();
+
 app.MapControllers();
 
 app.MapGet("/", () =>
@@ -158,22 +162,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-// app.UseExceptionHandler(options =>
-// {
-//     options.Run(async context =>
-//     {
-//         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-//         context.Response.ContentType = "application/json";
- 
-//         var exceptionFeature = context.Features.Get<IExceptionHandler>();
-//         if (exceptionFeature is not null)
-//         {
-//             var error = new { message = "An unexpected error occurred. Please try again later." };
-//             await context.Response.WriteAsJsonAsync(error);
-//         }
-//     });
-// });
 
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");

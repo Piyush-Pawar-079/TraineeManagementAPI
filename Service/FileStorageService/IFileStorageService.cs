@@ -1,12 +1,15 @@
+using traineeManagementAPI.DTO.SubmissionFileDTOs;
+using traineeManagementAPI.Model;
+
 namespace traineeManagementAPI.Service.FileStorageService;
 
 public interface IFileStorageService
 {
-    Task SaveAsync();
+    Task<SubmissionFile> SaveAsync(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken);
 
-    Task OpenReadAsync();
+    Task<(byte[] bytes, string contentType, string fileName)> OpenReadAsync(int id);
 
-    Task ExistsAsync();
+    Task<bool> ExistsAsync(int id);
 
-    Task<bool> DeleteAsync();
+    Task DeleteAsync(int id);
 }
