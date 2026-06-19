@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace traineeManagementAPI.Model;
 
-public enum TaskAssigmentStatus
+public enum TaskAssignmentStatus
 {
     Assigned,
     InProgress,
@@ -23,7 +23,7 @@ public class TaskAssignment : IValidatableObject
     public List<Submission> Submission { get; set; } = [];
     public DateTime AssignedDate { get; set; }
     public DateTime DueDate { get; set; }
-    public TaskAssigmentStatus Status { get; set; }
+    public TaskAssignmentStatus Status { get; set; }
     public string? Remarks { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)  

@@ -1,3 +1,5 @@
+using traineeManagementAPI.Model;
+
 namespace traineeManagementAPI.DTO.MentorDTOs;
 
 public class MentorDetailDTO

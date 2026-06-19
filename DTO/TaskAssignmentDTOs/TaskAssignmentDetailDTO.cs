@@ -1,6 +1,7 @@
 using traineeManagementAPI.DTO.LearningTaskDTOs;
 using traineeManagementAPI.DTO.MentorDTOs;
 using traineeManagementAPI.DTO.TraineeDTOs;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.TaskAssignmentDTOs;
 
@@ -14,6 +15,6 @@ public class TaskAssignmentDetailDTO
 
     public DateTime AssignedDate { get; set; }
     public DateTime DueDate { get; set; }
-    public required string Status { get; set; }
+    public required TaskAssignmentStatus Status { get; set; }
     public string? Remarks { get; set; }
 }

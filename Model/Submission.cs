@@ -16,4 +16,5 @@ public class Submission
     public required DateTime SubmittedDate { get; set; }
     public required SubmissionStatus Status { get; set; }
     public List<Review> Reviews { get; set; } = [];
+    public List<SubmissionFile> SubmissionFiles = [];
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.MentorDTOs;
 

@@ -1,3 +1,5 @@
+using traineeManagementAPI.Model;
+
 namespace traineeManagementAPI.DTO.UserDTOs;
 
 public class UserResponseDTO

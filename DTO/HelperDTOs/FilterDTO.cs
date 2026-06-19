@@ -1,9 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using traineeManagementAPI.DTO.TraineeDTOs;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.HelperDTOs;
-
-
 
 public class FilterDTO
 {

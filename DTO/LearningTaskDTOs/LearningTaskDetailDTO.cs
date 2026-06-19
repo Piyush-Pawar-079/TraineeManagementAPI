@@ -1,4 +1,3 @@
-using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.LearningTaskDTOs;

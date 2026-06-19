@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.UserDTOs;
 

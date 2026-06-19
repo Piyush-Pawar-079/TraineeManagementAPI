@@ -21,7 +21,7 @@ public class CreateTaskAssignmentRequestDTO
     public DateTime DueDate { get; set; }
 
     [Required(ErrorMessage = "Status is required.")]
-    [EnumDataType(typeof(TaskAssigmentStatus), ErrorMessage = "Status can only be Assigned, InProgress, Submitted, Reviewed and Completed")]
-    public TaskAssigmentStatus Status { get; set; }
+    [EnumDataType(typeof(TaskAssignmentStatus), ErrorMessage = "Status can only be Assigned, InProgress, Submitted, Reviewed and Completed")]
+    public TaskAssignmentStatus Status { get; set; }
     public string? Remarks { get; set; }
 }
