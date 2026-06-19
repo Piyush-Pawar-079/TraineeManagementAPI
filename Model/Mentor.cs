@@ -1,6 +1,10 @@
-using traineeManagementAPI.DTO.MentorDTOs;
-
 namespace traineeManagementAPI.Model;
+
+public enum MentorStatus
+{
+    Active,
+    Inactive
+}
 
 public class Mentor
 {
@@ -14,6 +18,4 @@ public class Mentor
     public DateTime UpdatedDate { get; set; } // auto-generated
     public List<TaskAssignment> TaskAssignments { get; set; } = [];
     public List<Review> Reviews { get; set; } = [];
-
-
 }

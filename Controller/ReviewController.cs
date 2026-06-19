@@ -15,23 +15,19 @@ public class ReviewController(IReviewService ReviewService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllReview()
     {
-        var Reviews = await _ReviewService.GetAllAsync();
-
-        return Ok(Reviews);
+        return Ok(await _ReviewService.GetAllAsync());
     }
 
     [HttpGet("id")]
     public async Task<ActionResult> GetById(int id)
     {
-        var Review = await _ReviewService.GetByIdAsync(id);
-        return Ok(Review);
+        return Ok(await _ReviewService.GetByIdAsync(id));
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateReview(CreateReviewRequestDTO createReviewDTO)
     {
-        var createdReview = await _ReviewService.CreateAsync(createReviewDTO);
-        return Ok(createdReview);
+        return Ok(await _ReviewService.CreateAsync(createReviewDTO));
     }
 
 }

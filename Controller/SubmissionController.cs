@@ -15,23 +15,19 @@ public class SubmissionController(ISubmissionService submissionService) : Contro
     [HttpGet]
     public async Task<ActionResult> GetAllSubmission()
     {
-        var submissions = await _submissionService.GetAllAsync();
-
-        return Ok(submissions);
+        return Ok(await _submissionService.GetAllAsync());
     }
 
     [HttpGet("id")]
     public async Task<ActionResult> GetById(int id)
     {
-        var submission = await _submissionService.GetByIdAsync(id);
-        return Ok(submission);
+        return Ok(await _submissionService.GetByIdAsync(id));
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateSubmission(CreateSubmissionRequestDTO createSubmissionDTO)
     {
-        var createdSubmission = await _submissionService.CreateAsync(createSubmissionDTO);
-        return Ok(createdSubmission);
+        return Ok(await _submissionService.CreateAsync(createSubmissionDTO));
     }
 
 }

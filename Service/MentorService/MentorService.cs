@@ -83,16 +83,16 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         existingMentor.UpdatedDate = DateTime.UtcNow;
 
-        var desiredTrainee = await _repo.UpdateAsync(id, existingMentor);
+        var desiredMentor = await _repo.UpdateAsync(id, existingMentor);
 
-        if(desiredTrainee == null)
+        if(desiredMentor == null)
         {
             _logger.LogError("Something went wrong while updating a new Mentor.");
             throw new Exception("Something went wrong while updating a new Mentor");
         }
 
         _logger.LogInformation("Mentor Updated Successfully");
-        return _mapper.Map<MentorDetailDTO>(desiredTrainee);
+        return _mapper.Map<MentorDetailDTO>(desiredMentor);
     }
 
     public async Task<bool> DeleteAsync(int id)

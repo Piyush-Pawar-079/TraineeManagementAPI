@@ -1,7 +1,12 @@
 
-using traineeManagementAPI.DTO.LearningTaskDTOs;
-
 namespace traineeManagementAPI.Model;
+
+public enum LearningTaskStatus
+{
+    Draft,
+    Published,
+    Closed
+}
 
 public class LearningTask
 {

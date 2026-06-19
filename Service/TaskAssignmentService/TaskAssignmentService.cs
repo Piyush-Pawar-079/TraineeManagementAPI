@@ -23,7 +23,10 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
         var entity = await _repo.GetTaskAssignmentByIdAsync(id);
 
         if (entity == null)
-            return null;
+        {
+            _logger.LogError("TaskAssignment with the specified Id is not available.");
+            throw new NotFoundException($"TaskAssignment with the id - {id} not found");
+        }
 
         return _mapper.Map<TaskAssignmentDetailDTO>(entity);
     }

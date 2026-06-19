@@ -1,8 +1,14 @@
 
-using traineeManagementAPI.DTO.TraineeDTOs;
-
 namespace traineeManagementAPI.Model;
-    public class Trainee
+
+public enum Status
+{
+    Active,
+    Inactive,
+    Completed
+}
+
+public class Trainee
 {
     public int Id { get; set; } // auto-generated
     public required string FirstName { get; set; } 

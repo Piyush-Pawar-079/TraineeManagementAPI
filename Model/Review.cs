@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace traineeManagementAPI.Model;
 
 public enum ReviewStatus

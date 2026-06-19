@@ -1,13 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.LearningTaskDTOs;
-
-public enum LearningTaskStatus
-{
-    Draft,
-    Published,
-    Closed
-}
 
 public class CreateLearningTaskRequestDTO
 {

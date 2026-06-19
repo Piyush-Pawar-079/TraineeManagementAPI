@@ -1,7 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using traineeManagementAPI.DTO.UserDTOs;
 
 namespace traineeManagementAPI.Model;
+
+public enum Role
+{
+    Admin,
+    Mentor, 
+    Trainee
+}
+
 
 [Index(nameof(Username), IsUnique = true)]
 public class User

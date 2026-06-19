@@ -8,10 +8,9 @@ namespace traineeManagementAPI.Controller;
 [Authorize]
 [ApiController]
 [Route("/api/task-assignment")]
-public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentService, ILogger<TaskAssignmentController> logger) : ControllerBase
+public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentService) : ControllerBase
 {
     private readonly ITaskAssignmentService _taskAssignmentService = TaskAssignmentService;
-    private readonly ILogger<TaskAssignmentController> _logger = logger;
 
     [HttpGet]
     public async Task<ActionResult<List<TaskAssignmentDetailDTO>>> GetAllTaskAssignments()
@@ -22,16 +21,14 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskAssignmentDetailDTO?>> GetTaskAssignmentById(int id)
     {
-        var TaskAssignment = await _taskAssignmentService.GetByIdAsync(id);
-        return Ok(TaskAssignment);
+        return Ok(await _taskAssignmentService.GetByIdAsync(id));
 
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<TaskAssignmentDetailDTO?>> UpdateTaskAssignment(int id, UpdateTaskAssignmentRequestDTO updateDto)
     {
-        var updatedTaskAssignment = await _taskAssignmentService.UpdateAsync(id, updateDto);
-        return Ok(updatedTaskAssignment);
+        return Ok(await _taskAssignmentService.UpdateAsync(id, updateDto));
     }
 
     [HttpPost]

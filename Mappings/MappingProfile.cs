@@ -6,6 +6,7 @@ using traineeManagementAPI.DTO.LearningTaskDTOs;
 using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.DTO.SubmissionDTOs;
 using traineeManagementAPI.DTO.ReviewDTOs;
+using traineeManagementAPI.DTO.UserDTOs;
 
 namespace traineeManagementAPI.Mappings;
 
@@ -15,6 +16,10 @@ public class MappingProfile : Profile
     {
         CreateMap<Trainee, TraineeBasicDTO>();
         CreateMap<Trainee, TraineeDetailDTO>();
+
+        CreateMap<User, UserResponseDTO>();
+        CreateMap<CreateUserRequestDTO, User>();
+        CreateMap<User, CreateUserRequestDTO>();
 
         CreateMap<Mentor, MentorBasicDTO>();
         CreateMap<Mentor, MentorDetailDTO>();

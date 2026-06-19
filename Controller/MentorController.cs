@@ -8,10 +8,9 @@ namespace traineeManagementAPI.Controller;
 [Authorize]
 [ApiController]
 [Route("/api/Mentors")]
-public class MentorController(IMentorService mentorService, ILogger<MentorController> logger) : ControllerBase
+public class MentorController(IMentorService mentorService) : ControllerBase
 {
     private readonly IMentorService _mentorService = mentorService;
-    private readonly ILogger<MentorController> _logger = logger;
 
     [HttpGet]
     public async Task<ActionResult<List<MentorDetailDTO>>> GetAllMentors()
@@ -22,15 +21,13 @@ public class MentorController(IMentorService mentorService, ILogger<MentorContro
     [HttpGet("{id}")]
     public async Task<ActionResult<MentorDetailDTO?>> GetMentorById(int id)
     {
-        var mentor = await _mentorService.GetByIdAsync(id);
-        return Ok(mentor);
+        return Ok(await _mentorService.GetByIdAsync(id));
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<MentorDetailDTO?>> UpdateMentor(int id, UpdateMentorRequestDTO updateDto)
     {
-        var updatedMentor = await _mentorService.UpdateAsync(id, updateDto);
-        return Ok(updatedMentor);
+        return Ok(await _mentorService.UpdateAsync(id, updateDto));
     }
 
     [HttpPost]

@@ -1,15 +1,8 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.UserDTOs;
-
-public enum Role
-{
-    Admin,
-    Mentor, 
-    Trainee
-}
 
 [Index(nameof(Username), IsUnique = true)]
 public class CreateUserRequestDTO

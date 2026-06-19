@@ -8,10 +8,9 @@ namespace traineeManagementAPI.Controller;
 [Authorize]
 [ApiController]
 [Route("/api/learning-tasks")]
-public class LearningTaskController(ILearningTaskService LearningTaskService, ILogger<LearningTaskController> logger) : ControllerBase
+public class LearningTaskController(ILearningTaskService LearningTaskService) : ControllerBase
 {
     private readonly ILearningTaskService _LearningTaskService = LearningTaskService;
-    private readonly ILogger<LearningTaskController> _logger = logger;
 
     [HttpGet]
     public async Task<ActionResult<List<LearningTaskDetailDTO>>> GetAllLearningTasks()
@@ -22,15 +21,13 @@ public class LearningTaskController(ILearningTaskService LearningTaskService, IL
     [HttpGet("{id}")]
     public async Task<ActionResult<LearningTaskDetailDTO?>> GetLearningTaskById(int id)
     {
-        var LearningTask = await _LearningTaskService.GetByIdAsync(id);
-        return Ok(LearningTask);
+        return Ok(await _LearningTaskService.GetByIdAsync(id));
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<LearningTaskDetailDTO?>> UpdateLearningTask(int id, UpdateLearningTaskRequestDTO updateDto)
     {
-        var updatedLearningTask = await _LearningTaskService.UpdateAsync(id, updateDto);
-        return Ok(updatedLearningTask);
+        return Ok(await _LearningTaskService.UpdateAsync(id, updateDto));
     }
 
     [HttpPost]

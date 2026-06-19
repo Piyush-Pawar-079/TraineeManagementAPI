@@ -1,13 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.TraineeDTOs;
 
-public enum Status
-{
-    Active,
-    Inactive,
-    Completed
-}
 public class CreateTraineeRequestDTO
 {
     [Required(ErrorMessage = "First name is required")]

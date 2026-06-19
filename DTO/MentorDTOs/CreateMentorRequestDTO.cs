@@ -1,12 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using traineeManagementAPI.Model;
 
 namespace traineeManagementAPI.DTO.MentorDTOs;
 
-public enum MentorStatus
-{
-    Active,
-    Inactive
-}
 public class CreateMentorRequestDTO
 {
     [Required(ErrorMessage = "First name is required")]
