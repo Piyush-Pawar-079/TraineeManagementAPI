@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using Microsoft.Extensions.Caching.Distributed;
 using DotNetEnv;
+
 
 using traineeManagementAPI.Data;
 using traineeManagementAPI.Exceptions;
@@ -28,6 +30,7 @@ using traineeManagementAPI.Service.TraineeService;
 using traineeManagementAPI.Mappings;
 using traineeManagementAPI.Service.FileStorageService;
 using traineeManagementAPI.Repositories.SubmissionFileRepository;
+using StackExchange.Redis;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +64,23 @@ var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 );
+
+var redisConn = Environment.GetEnvironmentVariable("RedisConnectionString");
+
+if (string.IsNullOrWhiteSpace(redisConn))
+{
+   throw new NotFoundException("Redis connection string is missing");
+}
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+   sp =>
+   {
+      return ConnectionMultiplexer.Connect(redisConn);
+   }
+);
+
+// builder.Services.AddScoped<RedisCacheService>();
+
 
 builder.Services
     .AddAuthentication(options =>
@@ -163,7 +183,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
 
 app.Run();
