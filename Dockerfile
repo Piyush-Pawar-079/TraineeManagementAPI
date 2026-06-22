@@ -17,5 +17,3 @@ COPY --from=build /app/publish .
 EXPOSE 8080
 
 ENTRYPOINT [ "dotnet", "traineeManagementAPI.dll" ]
-
-

@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
-using Microsoft.Extensions.Caching.Distributed;
 using DotNetEnv;
 
 
@@ -31,6 +30,7 @@ using traineeManagementAPI.Mappings;
 using traineeManagementAPI.Service.FileStorageService;
 using traineeManagementAPI.Repositories.SubmissionFileRepository;
 using StackExchange.Redis;
+using traineeManagementAPI.Service.RedisService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,10 +72,10 @@ if (string.IsNullOrWhiteSpace(redisConn))
    throw new NotFoundException("Redis connection string is missing");
 }
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-   sp =>
+builder.Services.AddStackExchangeRedisCache(
+   options =>
    {
-      return ConnectionMultiplexer.Connect(redisConn);
+      options.Configuration = redisConn;
    }
 );
 
@@ -155,6 +155,8 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<ISubmissionFileRepository, SubmissionFileRepository>();
+
+builder.Services.AddScoped<IRedisService, RedisService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

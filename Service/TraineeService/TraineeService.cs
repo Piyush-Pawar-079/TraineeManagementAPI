@@ -6,10 +6,11 @@ using traineeManagementAPI.DTO.HelperDTOs;
 using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using AutoMapper;
+using traineeManagementAPI.Service.RedisService;
 
 namespace traineeManagementAPI.Service.TraineeService;
 
-public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger, IMapper mapper) : ITraineeService
+public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger, IMapper mapper, IRedisService cache) : ITraineeService
 {
 
     private class SortFields
@@ -24,6 +25,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
     private readonly ITraineeRepository _repository = repository;
     private readonly ILogger<TraineeService> _logger = logger;
     private readonly IMapper _mapper = mapper;
+    private readonly IRedisService _cache = cache;
 
     public async Task<List<TraineeDetailDTO>> GetAllTrainees()
     {
@@ -35,13 +37,27 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<TraineeDetailDTO?> GetTraineeById(int id)
     {
-        var trainee = await _repository.GetByIdAsync(id);
 
-        if (trainee == null)
+        var key = $"Trainee:{id}";
+        var trainee = await _cache.GetAsync<TraineeDetailDTO>(key);
+
+        if (trainee != null)
+        {
+            _logger.LogInformation("Trainee with the specified Id found in redis cache.");
+            return trainee;
+        }
+
+        _logger.LogError("Trainee not found in redis cache, fetching from database.");
+
+        var  dbTrainee = await _repository.GetByIdAsync(id);
+
+        if (dbTrainee == null)
         {
             _logger.LogError("Trainee with the specified Id is not available.");
             throw new NotFoundException($"Trainee with the id - {id} not found");
         }
+
+        await _cache.SetAsync(key, _mapper.Map<TraineeDetailDTO>(dbTrainee));
 
         return _mapper.Map<TraineeDetailDTO>(trainee);
 
@@ -49,6 +65,9 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<TraineeDetailDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
+        var key = $"Trainee:{id}";
+        await _cache.RemoveAsync(key);
+
         var existingTrainee = await _repository.GetByIdAsync(id);
 
         if (existingTrainee == null)
@@ -112,11 +131,12 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<bool> DeleteTrainee(int id)
     {
+        await _cache.RemoveAsync($"Trainee:{id}");
         _logger.LogInformation("Trainee Deleted Successfully");
         return await _repository.DeleteAsync(id);
     }
 
-    private static List<Trainee> Search(String searchParam, List<Trainee> trainees)
+    private static List<Trainee> Search(string searchParam, List<Trainee> trainees)
     {
         var desiredTrainee = trainees.Where(
             t => 

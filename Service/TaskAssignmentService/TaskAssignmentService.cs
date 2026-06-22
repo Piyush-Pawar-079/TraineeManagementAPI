@@ -3,14 +3,16 @@ using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Model;
 using traineeManagementAPI.Repositories.TaskAssignmentRepository;
+using traineeManagementAPI.Service.RedisService;
 
 namespace traineeManagementAPI.Service.TaskAssignmentService;
 
-public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger<TaskAssignmentService> logger, IMapper mapper) : ITaskAssignmentService
+public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger<TaskAssignmentService> logger, IMapper mapper, IRedisService cache) : ITaskAssignmentService
 {
     private readonly ITaskAssignmentRepository _repo = repository;
     private readonly ILogger<TaskAssignmentService> _logger = logger;
     private readonly IMapper _mapper = mapper;
+    private readonly IRedisService _cache = cache;
 
     public async Task<List<TaskAssignmentDetailDTO>> GetAllAsync()
     {
@@ -20,15 +22,29 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
 
     public async Task<TaskAssignmentDetailDTO?> GetByIdAsync(int id)
     {
-        var entity = await _repo.GetTaskAssignmentByIdAsync(id);
+        var key = $"TaskAssignment:{id}";
+        var taskAssignment = await _cache.GetAsync<TaskAssignmentDetailDTO>(key);
 
-        if (entity == null)
+        if (taskAssignment != null)
         {
-            _logger.LogError("TaskAssignment with the specified Id is not available.");
-            throw new NotFoundException($"TaskAssignment with the id - {id} not found");
+            _logger.LogInformation("taskAssignment with the specified Id found in redis cache.");
+            return taskAssignment;
         }
 
-        return _mapper.Map<TaskAssignmentDetailDTO>(entity);
+        _logger.LogError("taskAssignment not found in redis cache, fetching from database.");
+
+        var  dbtaskAssignment = await _repo.GetTaskAssignmentByIdAsync(id);
+
+        if (dbtaskAssignment == null)
+        {
+            _logger.LogError("Task Assignment with the specified Id is not available.");
+            throw new NotFoundException($"Task Assignment with the id - {id} not found");
+        }
+
+        await _cache.SetAsync(key, _mapper.Map<TaskAssignmentDetailDTO>(dbtaskAssignment), 15);
+
+        return _mapper.Map<TaskAssignmentDetailDTO>(dbtaskAssignment);
+
     }
 
     public async Task<TaskAssignmentDetailDTO> CreateAsync(CreateTaskAssignmentRequestDTO dto)
@@ -43,6 +59,7 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
 
     public async Task<TaskAssignmentDetailDTO?> UpdateAsync(int id, UpdateTaskAssignmentRequestDTO updateTaskAssignmentDto)
     {
+        await _cache.RemoveAsync($"TaskAssignment:{id}");
         var existingTaskAssignment = await _repo.GetTaskAssignmentByIdAsync(id);
 
         if (existingTaskAssignment == null)
