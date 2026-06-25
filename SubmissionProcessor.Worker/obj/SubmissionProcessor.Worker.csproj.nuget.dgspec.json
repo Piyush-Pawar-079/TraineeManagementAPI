@@ -407,6 +407,22 @@
               "target": "Package",
               "version": "[10.0.9, )"
             },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[10.0.9, )"
+            },
+            "Microsoft.Extensions.Http.Polly": {
+              "target": "Package",
+              "version": "[10.0.9, )"
+            },
+            "Microsoft.Extensions.Http.Resilience": {
+              "target": "Package",
+              "version": "[10.7.0, )"
+            },
+            "Microsoft.Extensions.Resilience": {
+              "target": "Package",
+              "version": "[10.7.0, )"
+            },
             "RabbitMQ.Client": {
               "target": "Package",
               "version": "[7.2.1, )"

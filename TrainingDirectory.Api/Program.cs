@@ -1,21 +1,13 @@
-using DotNetEnv;
-using CommonLibrary.Data;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-Env.Load("../CommonLibrary/.env");
-
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
-
-builder.Services.AddDbContext<ApplicationDBContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-);
-
+builder.Services.AddControllers();
 
 var app = builder.Build();
+
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -9,7 +9,7 @@ namespace TrainingDirectory.Api.Controllers
     public class TraineesController : ControllerBase
     {
         [HttpGet("{id}")]
-        public ActionResult<TraineeProfileResponseDto> GetTrainee(int id)
+        public ActionResult<TraineeProfileResponseDto> GetTraineeById(int id)
         {
             var trainee = DummyTraineeData.Trainees.FirstOrDefault(t => t.Id == id);
 
@@ -17,7 +17,7 @@ namespace TrainingDirectory.Api.Controllers
                 return NotFound();
 
             // Map Model → DTO
-            var response = new TraineeProfileResponseDto
+            TraineeProfileResponseDto response = new()
             {
                 Id = trainee.Id,
                 Name = trainee.FullName,
@@ -38,7 +38,7 @@ namespace TrainingDirectory.Api.Controllers
                 return NotFound();
 
             // Map Model → DTO
-            var response = trainee.Select(t => new TraineeProfileResponseDto
+            TraineeProfileResponseDto response = (TraineeProfileResponseDto)trainee.Select(t => new TraineeProfileResponseDto
             {
                 Id = t.Id,
                 Name = t.FullName,

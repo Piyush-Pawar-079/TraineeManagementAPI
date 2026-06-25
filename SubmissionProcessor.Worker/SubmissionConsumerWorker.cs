@@ -6,16 +6,19 @@ using CommonLibrary.Models;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using SubmissionProcessor.Worker.Clients;
 
 
 namespace SubmissionProcessor.Worker;
 
 public class SubmissionProcessorWorker(
     IServiceProvider serviceProvider,
-    ILogger<SubmissionProcessorWorker> logger) : BackgroundService
+    ILogger<SubmissionProcessorWorker> logger,
+    HttpDirectoryClient client) : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<SubmissionProcessorWorker> _logger = logger;
+    private readonly HttpDirectoryClient _client = client;
     private IConnection _connection = null!;
     private IChannel _channel = null!;
 
@@ -35,10 +38,30 @@ public class SubmissionProcessorWorker(
 
         // Limit data chunking processing window
         await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+
     }
 
     protected async override Task<Task> ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Calling TrainingDirectory API...");
+
+        var trainee = await _client.GetTraineeByIdAsync(1, stoppingToken);
+
+        if (trainee != null)
+        {
+            _logger.LogInformation(
+                "Trainee: {Name}, Course: {Course}, Completed: {CompletedAssignments}",
+                trainee.Name,
+                trainee.Course,
+                trainee.CompletedAssignments);
+        }
+        else
+        {
+            _logger.LogWarning("Could not fetch trainee data");
+        }
+
+        await Task.Delay(5000, stoppingToken);
+
 
         if (_channel == null || _connection == null || !_connection.IsOpen)
         {
@@ -151,10 +174,5 @@ public class SubmissionProcessorWorker(
         }
         return;
 
-    }
-    public async Task Dispose()
-    {
-        _channel?.CloseAsync();
-        _connection?.CloseAsync();
     }
 }
