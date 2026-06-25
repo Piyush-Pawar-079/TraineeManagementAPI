@@ -6,7 +6,7 @@ namespace traineeManagementAPI.DTO.ProcessingJobDTOs;
 public class ProcessingJobResponseDTO
 {
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public String CorrelationId { get; set; } = "";
     public int SubmissionId { get; set; }
     public int FileId { get; set; }

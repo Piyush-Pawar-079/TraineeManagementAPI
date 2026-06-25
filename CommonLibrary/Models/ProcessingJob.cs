@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace CommonLibrary.Models;
 
 public enum JobStatus
@@ -12,9 +10,8 @@ public enum JobStatus
 
 public class ProcessingJob
 {
-    [Key]
     public int Id { get; set; }
-    public String CorrelationId { get; set; } = "";
+    public string CorrelationId { get; set; } = "";
     public int SubmissionId { get; set; }
     public int FileId { get; set; }
     public JobStatus Status { get; set; }

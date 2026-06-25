@@ -16,8 +16,8 @@ public class SubmissionProcessorWorker(
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<SubmissionProcessorWorker> _logger = logger;
-    private IConnection? _connection;
-    private IChannel? _channel;
+    private IConnection _connection = null!;
+    private IChannel _channel = null!;
 
     private async Task InitializeRabbitMq()
     {
@@ -40,29 +40,25 @@ public class SubmissionProcessorWorker(
     protected async override Task<Task> ExecuteAsync(CancellationToken stoppingToken)
     {
 
-        if (_channel == null)
+        if (_channel == null || _connection == null || !_connection.IsOpen)
         {
             await InitializeRabbitMq();
         }
 
         stoppingToken.ThrowIfCancellationRequested();
 
-        var consumer = new AsyncEventingBasicConsumer(_channel);
+        var consumer = new AsyncEventingBasicConsumer(_channel!);
         consumer.ReceivedAsync += async (model, ea) =>
         {
-            Console.WriteLine("Inside the received async thing : " + ea);
             await HandleMessageDeliveryAsync(ea);
         };
-        await _channel.BasicConsumeAsync(queue: Environment.GetEnvironmentVariable("RabbitMQ_QueueName")!, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
-
-        _logger.LogError("Something is done by the worker.");
+        await _channel!.BasicConsumeAsync(queue: Environment.GetEnvironmentVariable("RabbitMQ_QueueName")!, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
         return Task.CompletedTask;
     }
 
     private async Task HandleMessageDeliveryAsync(BasicDeliverEventArgs ea)
     {
         using var scope = _serviceProvider.CreateScope();
-        Console.WriteLine("Literaly inside that function: " + scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
         SubmissionProcessingRequested? message = null;
 
@@ -71,7 +67,6 @@ public class SubmissionProcessorWorker(
             var body = ea.Body.ToArray();
             var json = Encoding.UTF8.GetString(body);
             message = JsonSerializer.Deserialize<SubmissionProcessingRequested>(json);
-            Console.WriteLine("Body and json: " + body + json);
             if (message == null)
             {
                 _logger.LogError("Corrupted data structural package payload. Dropping.");
@@ -80,14 +75,6 @@ public class SubmissionProcessorWorker(
             }
 
             // Task 3.15 Idempotency Guard
-            var alreadyProcessed = await dbContext.ProcessedMessages.AnyAsync(m => m.MessageId == message.MessageId);
-            if (alreadyProcessed)
-            {
-                _logger.LogWarning("Duplicate delivery detected for message ID: {MessageId}. Skipping processing.", message.MessageId);
-                await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
-                return;
-            }
-
             // Fetch state and track processing attempt lifecycle
             var job = await dbContext.ProcessingJobs.FirstOrDefaultAsync(j => j.CorrelationId == message.CorrelationId);
             if (job != null)
@@ -99,39 +86,36 @@ public class SubmissionProcessorWorker(
                     return;
                 }
 
+                if (job.Attempts > 3)
+                {
+                    job.Status = JobStatus.Failed;
+                    job.CompletedAt = DateTime.UtcNow;
+                    await dbContext.SaveChangesAsync();
+                    await _channel.BasicRejectAsync(ea.DeliveryTag, requeue: false);
+                    return;
+                }
+
                 job.Status = JobStatus.Processing;
                 job.Attempts++;
                 job.StartedAt = DateTime.UtcNow;
                 await dbContext.SaveChangesAsync();
+                
+                // Task 3.13 Executing safe structural computational metadata calculations
+                await ProcessBusinessLogicSimulationAsync(message, dbContext, job);
             }
-
-            // Task 3.13 Executing safe structural computational metadata calculations
-            await ProcessBusinessLogicSimulationAsync(message);
-
-            // Save processing updates state securely
-            if (job != null)
-            {
-                job.Status = JobStatus.Completed;
-                job.CompletedAt = DateTime.UtcNow;
-            }
-
-            dbContext.ProcessedMessages.Add(new ProcessedMessage { MessageId = message.MessageId });
-            await dbContext.SaveChangesAsync();
 
             // Task 3.12 Confirm broker clearing validation
             await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Execution exception thrown during processing of payload package.");
-            await HandleFailureLifecycleAsync(ea, dbContext, message, ex);
         }
     }
 
-    private async Task ProcessBusinessLogicSimulationAsync(SubmissionProcessingRequested msg)
+    private async Task ProcessBusinessLogicSimulationAsync(SubmissionProcessingRequested msg, ApplicationDBContext dbcontext, ProcessingJob job)
     {
-        // Simulate IO computation operations safely
-        await Task.Delay(1500);
 
         if (string.IsNullOrEmpty(msg.FileId))
         {
@@ -143,46 +127,31 @@ public class SubmissionProcessorWorker(
         {
             throw new TimeoutException("Database communication link timed out.");
         }
-    }
 
-    private async Task HandleFailureLifecycleAsync(BasicDeliverEventArgs ea, ApplicationDBContext context, SubmissionProcessingRequested? msg, Exception ex)
-    {
-        if (msg == null || _channel == null) return;
+        var submissionFile = await dbcontext.SubmissionFiles.FirstOrDefaultAsync(sf => sf.Id == int.Parse(msg.FileId));
 
-        try
+        if (submissionFile == null)
         {
-            var job = await context.ProcessingJobs.FirstOrDefaultAsync(j => j.CorrelationId == msg.CorrelationId);
-            bool isTransient = ex is TimeoutException || ex is HttpRequestException;
-
+            // Save processing updates state securely
             if (job != null)
             {
-                job.ErrorSummary = ex.Message;
-                
-                // Task 3.16 Evaluation limits condition checking logic
-                if (job.Attempts >= 3 || !isTransient)
-                {
-                    job.Status = JobStatus.Failed;
-                    job.CompletedAt = DateTime.UtcNow;
-                    await context.SaveChangesAsync();
-
-                    _logger.LogCritical("Permanent error reached for Job {JobId}. Rejecting to DLX without requeue.", job.Id);
-                    await _channel.BasicRejectAsync(ea.DeliveryTag, requeue: false);
-                }
-                else
-                {
-                    await context.SaveChangesAsync();
-                    _logger.LogWarning("Transient issue handling loop counter matched. Requeuing message strategy.");
-                    await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
-                }
+                job.Status = JobStatus.Failed;
+                job.CompletedAt = DateTime.UtcNow;
+                await dbcontext.SaveChangesAsync();
             }
+            _logger.LogError($"Submission File with the file Id - {msg.FileId} is not present in the database");
+            throw new FileNotFoundException($"Submission File with the file Id - {msg.FileId} is not present in the database");
         }
-        catch (Exception dbEx)
+        // Save processing updates state securely
+        if (job != null)
         {
-            _logger.LogError(dbEx, "Failed to persist structural framework infrastructure log errors.");
-            await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
+            job.Status = JobStatus.Completed;
+            job.CompletedAt = DateTime.UtcNow;
+            await dbcontext.SaveChangesAsync();
         }
-    }
+        return;
 
+    }
     public async Task Dispose()
     {
         _channel?.CloseAsync();

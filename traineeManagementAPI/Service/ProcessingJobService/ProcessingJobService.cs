@@ -1,4 +1,5 @@
 using AutoMapper;
+using CommonLibrary.Models;
 using traineeManagementAPI.DTO.ProcessingJobDTOs;
 using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Repositories.ProcessingJobRepository;
@@ -22,7 +23,11 @@ public class ProcessingJobService(IProcessingJobRepository repo, ILogger<Process
         }
 
         return _mapper.Map<ProcessingJobResponseDTO>(job);
+    }
 
+    public async Task AddProcessingJob(ProcessingJob job)
+    {
+        await _repo.AddJobAsync(job);
     }
 
 }

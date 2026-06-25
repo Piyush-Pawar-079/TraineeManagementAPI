@@ -14,7 +14,5 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 );
 
-
-
 var host = builder.Build();
 host.Run();

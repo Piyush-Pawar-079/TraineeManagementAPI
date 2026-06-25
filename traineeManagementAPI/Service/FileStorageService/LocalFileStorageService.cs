@@ -6,6 +6,8 @@ using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.SubmissionFileRepository;
 using traineeManagementAPI.Service.PublisherService;
+using traineeManagementAPI.DTO.ProcessingJobDTOs;
+using traineeManagementAPI.Service.ProcessingJobService;
 
 namespace traineeManagementAPI.Service.FileStorageService;
 
@@ -14,19 +16,21 @@ public class LocalFileStorageService: IFileStorageService
     private readonly ISubmissionFileRepository _repo;
     private readonly string _uploadPath;
     private readonly ILogger<LocalFileStorageService> _logger;
+    private readonly IProcessingJobService _jobService;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly RabbitMqSubmissionPublisher _publisher;
     private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt", ".zip"];
 
-    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, IProcessingJobService jobService)
     {
         _repo = repo;
         _logger = logger;
-        _uploadPath = "uploads";
+        _uploadPath = "../CommonLibrary/uploads";
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _publisher = publisher;
+        _jobService = jobService;
 
         if (!Directory.Exists(_uploadPath))
         {
@@ -91,6 +95,8 @@ public class LocalFileStorageService: IFileStorageService
             FileId = submissionFile.Id,
             Status = JobStatus.Queued
         };
+
+        await _jobService.AddProcessingJob(job);
 
         // 2. Publish messaging work item out of the critical request path
         var message = new SubmissionProcessingRequested

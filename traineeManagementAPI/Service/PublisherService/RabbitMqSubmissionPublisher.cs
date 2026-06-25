@@ -101,7 +101,7 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
             { "x-dead-letter-routing-key", "failed" }
         };
 
-        string QueueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName") ?? "submission-processing";
+        string QueueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName") ?? "submission-processor";
 
         await _channel.QueueDeclareAsync(QueueName, durable: true, exclusive: false, autoDelete: false, arguments: queueArguments);
         await _channel.QueueDeclareAsync($"{QueueName}-failed", durable: true, exclusive: false, autoDelete: false);
