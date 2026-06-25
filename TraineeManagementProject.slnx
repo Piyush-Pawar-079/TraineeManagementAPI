@@ -2,4 +2,5 @@
   <Project Path="CommonLibrary/CommonLibrary.csproj" />
   <Project Path="SubmissionProcessor.Worker/SubmissionProcessor.Worker.csproj" />
   <Project Path="traineeManagementAPI/traineeManagementAPI.csproj" />
+  <Project Path="TrainingDirectory.Api/TrainingDirectory.Api.csproj" />
 </Solution>
