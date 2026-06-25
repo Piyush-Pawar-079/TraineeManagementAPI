@@ -13,24 +13,23 @@ RUN cat > nuget.config <<EOF
   <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
-    <add key="${NUGET_REPO_NAME}" value="https://zeuslearning-${DOMAIN_OWNER}.d.codeartifact.${REGION}.amazonaws.com/nuget/${NUGET_REPO_NAME… />
+    <add key="${NUGET_REPO_NAME}" value="https://zeuslearning-${DOMAIN_OWNER}.d.codeartifact.${REGION}.amazonaws.com/nuget/${NUGET_REPO_NAME}/v3/index.json" />
   </packageSources>
 </configuration>
 EOF
- 
-COPY ./Trainee.api/ ./Trainee.api/
-WORKDIR /AppCode/Trainee.api
+
+COPY . .
  
 # add nuget config with credentials
-RUN dotnet nuget update source ${NUGET_REPO_NAME} -u "aws" -p "${CODEARTIFACT_AUTH_TOKEN}" --store-password-in-clear-text --configfile /AppCode/nuget.config
- 
-RUN dotnet restore --configfile /AppCode/nuget.config
+RUN dotnet nuget update source "${NUGET_REPO_NAME}" -u "aws" -p "${CODEARTIFACT_AUTH_TOKEN}" --store-password-in-clear-text --configfile ./nuget.config
+
+RUN dotnet restore --configfile ./nuget.config
 RUN dotnet publish -c Release -o out --no-restore
  
  
  
 FROM docker-registry-002.zeuslearning.com/zeuslearning/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /App
-COPY --from=build-env /AppCode/Trainee.api/out .
+COPY --from=build-env /AppCode/out .
 EXPOSE 5237
 ENTRYPOINT ["dotnet", "Trainee.api.dll"]
