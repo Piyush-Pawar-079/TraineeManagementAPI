@@ -1,0 +1,8 @@
+docker build -f <path to the docker file> --build-arg DOMAIN_OWNER=$DOMAIN_OWNER --build-arg REGION=$REGION --build-arg NUGET_REPO_NAME=$NUGET_REPO_NAME --build-arg CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN -t <name of the image> .
+
+CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain zeuslearning --domain-owner 824100177805 --region ap-south-1 --query authorizationToken --profile ZeusCodeArtifact --output text`
+
+export DOMAIN_OWNER=824100177805
+export REGION=ap-south-1
+export NUGET_REPO_NAME=training-nuget-store
+export CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN

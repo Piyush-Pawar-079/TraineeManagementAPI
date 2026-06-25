@@ -32,25 +32,26 @@ services:
     volumes:
       - mysql-data:/data
  
-  # api:
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/Dockerfile
-  #     args:
-  #       DOMAIN_OWNER: ${DOMAIN_OWNER}
-  #       NUGET_REPO_NAME: ${NUGET_REPO_NAME}
-  #       CODEARTIFACT_AUTH_TOKEN: ${CODEARTIFACT_AUTH_TOKEN}
-  #       REGION: ${REGION}
-  #   env_file:
-  #     - ./docker/.env
-  #   container_name: trainee-api
-  #   depends_on:
-  #     - mysql
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #   restart: on-failure
+  api:
+    # build:
+    #   context: .
+    #   dockerfile: ./docker/Dockerfile
+    #   args:
+    #     DOMAIN_OWNER: ${DOMAIN_OWNER}
+    #     NUGET_REPO_NAME: ${NUGET_REPO_NAME}
+    #     CODEARTIFACT_AUTH_TOKEN: ${CODEARTIFACT_AUTH_TOKEN}
+    #     REGION: ${REGION}
+    # image: test
+    env_file:
+      - ./CommonLibrary/.env
+    container_name: trainee-api
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: on-failure
  
 volumes:
   mysql-data:

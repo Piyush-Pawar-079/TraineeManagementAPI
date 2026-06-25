@@ -18,18 +18,20 @@ RUN cat > nuget.config <<EOF
 </configuration>
 EOF
 
-COPY . .
+COPY CommonLibrary CommonLibrary
+COPY traineeManagementAPI traineeManagementAPI
  
 # add nuget config with credentials
-RUN dotnet nuget update source "${NUGET_REPO_NAME}" -u "aws" -p "${CODEARTIFACT_AUTH_TOKEN}" --store-password-in-clear-text --configfile ./nuget.config
+RUN dotnet nuget update source "${NUGET_REPO_NAME}" -u "aws" -p "${CODEARTIFACT_AUTH_TOKEN}" --store-password-in-clear-text --configfile /AppCode/nuget.config
 
-RUN dotnet restore --configfile ./nuget.config
+WORKDIR /AppCode/traineeManagementAPI
+RUN dotnet restore --configfile /AppCode/nuget.config
 RUN dotnet publish -c Release -o out --no-restore
  
  
  
 FROM docker-registry-002.zeuslearning.com/zeuslearning/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /App
-COPY --from=build-env /AppCode/out .
+COPY --from=build-env /AppCode/traineeManagementAPI/out .
 EXPOSE 5237
-ENTRYPOINT ["dotnet", "Trainee.api.dll"]
+ENTRYPOINT ["dotnet", "traineeManagementAPI.dll"]
