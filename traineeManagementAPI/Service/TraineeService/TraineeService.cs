@@ -68,6 +68,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
     public async Task<TraineeDetailDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
         var key = $"Trainee:{id}";
+        _logger.LogInformation("Trainee cache invalidation while updating. CorrelationId: {CorrelationId}", correlationId);
         await _cache.RemoveAsync(key);
 
         var existingTrainee = await _repository.GetByIdAsync(id);
@@ -134,6 +135,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
     public async Task<bool> DeleteTrainee(int id)
     {
         await _cache.RemoveAsync($"Trainee:{id}");
+        _logger.LogInformation("Trainee cache invalidation while deleting. CorrelationId: {CorrelationId}", correlationId);
         _logger.LogInformation("Trainee Deleted Successfully. CorrelationId: {CorrelationId}", correlationId);
         return await _repository.DeleteAsync(id);
     }

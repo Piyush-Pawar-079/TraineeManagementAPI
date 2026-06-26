@@ -34,6 +34,9 @@ using traineeManagementAPI.Repositories.ProcessingJobRepository;
 using traineeManagementAPI.Service.ProcessingJobService;
 using traineeManagementAPI.Service.CorrelationIdService;
 using traineeManagementAPI.Middleware;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using RabbitMQ.Client;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +64,40 @@ builder.Services.AddControllers()
          new JsonStringEnumConverter()
       );
    });
+
+builder.Services.AddHealthChecks()
+   .AddMySql(
+      connectionString: Environment.GetEnvironmentVariable("DefaultConnection")!,
+      name: "mysql",
+      timeout: TimeSpan.FromSeconds(5))
+   .AddRedis(
+      redisConnectionString: Environment.GetEnvironmentVariable("RedisConnectionString")!,
+      name: "redis",
+      timeout: TimeSpan.FromSeconds(5))
+   .AddRabbitMQ(
+      async sp =>
+      {
+            var factory = new ConnectionFactory
+            {
+               HostName = Environment.GetEnvironmentVariable("RabbitMQ_Host")!,
+               Port = int.Parse(Environment.GetEnvironmentVariable("RabbitMQ_Port")!),
+               VirtualHost = Environment.GetEnvironmentVariable("RabbitMQ_VHost")!,
+               UserName = Environment.GetEnvironmentVariable("RabbitMQ_UserName")!,
+               Password = Environment.GetEnvironmentVariable("RabbitMQ_Password")!
+            };
+            return await factory.CreateConnectionAsync();
+      },
+      name: "rabbitmq",
+      failureStatus: HealthStatus.Unhealthy,
+      timeout: TimeSpan.FromSeconds(5),
+      tags: new[] { "mq", "rabbit" }
+    )
+    .AddUrlGroup(
+        uri: new Uri("http://localhost:5190/api/trainees"), // URL to check
+        name: "TraineeDirectory.Api",
+        failureStatus: HealthStatus.Unhealthy,
+        timeout: TimeSpan.FromSeconds(5)
+    );
 
 var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
  
@@ -176,8 +213,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionMiddleware>();
-app.UseMiddleware<CorrelationIdAccessor>();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -188,6 +223,35 @@ app.UseSwaggerUI();
 app.UseStaticFiles();
 
 app.MapControllers();
+
+app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+   Predicate = _ => true, // Include all health checks
+   ResponseWriter = async (context, report) =>
+   {
+      context.Response.ContentType = "application/json";
+ 
+      var result = new
+      {
+         status = report.Status.ToString(),
+         checks = report.Entries.Select(e => new {
+               name = e.Key,
+               status = e.Value.Status.ToString(),
+               description = e.Value.Description
+         })
+      };
+ 
+      await context.Response.WriteAsJsonAsync(result);
+   }
+});
+ 
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+   Predicate = _ => true
+});
 
 app.MapGet("/", () =>
 {

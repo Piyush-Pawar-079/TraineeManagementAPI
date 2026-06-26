@@ -10,19 +10,21 @@ namespace TrainingDirectory.Api.Controllers
     {
         private readonly ILogger<TraineesController> _logger = logger;
 
-        [HttpGet("{id}&{correlationId}")]
-        public ActionResult<TraineeProfileResponseDto> GetTraineeById(int id, string correlationId)
+        // ✅ GET TRAINEE BY ID
+        [HttpGet("{id}")]
+        public ActionResult<TraineeProfileResponseDto> GetTraineeById(int id)
         {
+            var correlationId = HttpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault();
+
             var trainee = DummyTraineeData.Trainees.FirstOrDefault(t => t.Id == id);
 
             if (trainee == null)
             {
-                _logger.LogError("Trainees data not found. CorrelationId: {CorrelationId}", correlationId);
+                _logger.LogError("Trainee not found. CorrelationId: {CorrelationId}", correlationId);
                 return NotFound();
             }
 
-            // Map Model → DTO
-            TraineeProfileResponseDto response = new()
+            var response = new TraineeProfileResponseDto
             {
                 Id = trainee.Id,
                 Name = trainee.FullName,
@@ -30,31 +32,28 @@ namespace TrainingDirectory.Api.Controllers
                 Status = trainee.Status,
                 CompletedAssignments = trainee.CompletedAssignments
             };
-            _logger.LogInformation("Sending the trainee with the Id: {id}. CorrelationId: {CorrelationId}", id, correlationId);
+
+            _logger.LogInformation("Returning trainee {Id}. CorrelationId: {CorrelationId}", id, correlationId);
+
             return Ok(response);
         }
 
-        [HttpGet("{correlationId}")]
-        public ActionResult<TraineeProfileResponseDto> GetTrainee(string correlationId)
+        // ✅ GET ALL TRAINEES
+        [HttpGet]
+        public ActionResult<List<TraineeProfileResponseDto>> GetTrainees()
         {
-            var trainee = DummyTraineeData.Trainees;
+            var correlationId = HttpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault();
 
-            if (trainee == null)
-            {
-                _logger.LogError("Something went wrong while getting the trainees data. CorrelationId: {CorrelationId}", correlationId);
-                return NotFound();
-            }
-            // Map Model → DTO
-            TraineeProfileResponseDto response = (TraineeProfileResponseDto)trainee.Select(t => new TraineeProfileResponseDto
+            var response = DummyTraineeData.Trainees.Select(t => new TraineeProfileResponseDto
             {
                 Id = t.Id,
                 Name = t.FullName,
                 Course = t.Course,
                 Status = t.Status,
                 CompletedAssignments = t.CompletedAssignments
-            });
+            }).ToList();
 
-            _logger.LogInformation("Sending all the trainees data. CorrelationID: {CorrelationId}", correlationId);
+            _logger.LogInformation("Returning all trainees. CorrelationId: {CorrelationId}", correlationId);
 
             return Ok(response);
         }

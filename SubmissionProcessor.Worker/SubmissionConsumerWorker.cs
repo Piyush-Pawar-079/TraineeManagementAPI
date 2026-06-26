@@ -33,51 +33,114 @@ public class SubmissionProcessorWorker(
             Password = Environment.GetEnvironmentVariable("RabbitMQ_Password")!
         };
 
+        _logger.LogInformation("Connecting to RabbitMQ...");
+
         _connection = await factory.CreateConnectionAsync();
         _channel = await _connection.CreateChannelAsync();
 
-        // Limit data chunking processing window
-        await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+        var queueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName") ?? "submission-processor";
 
+        // ✅ ✅ CRITICAL: Declare SAME exchange as publisher
+        await _channel.ExchangeDeclareAsync("submission-exchange", ExchangeType.Direct, durable: true);
+        await _channel.ExchangeDeclareAsync("submission-dlx", ExchangeType.Direct, durable: true);
+
+        // ✅ ✅ SAME arguments as publisher
+        IDictionary<string, object?> queueArguments = new Dictionary<string, object?>
+        {
+            { "x-dead-letter-exchange", "submission-dlx" },
+            { "x-dead-letter-routing-key", "failed" }
+        };
+
+        // ✅ ✅ DECLARE QUEUES (MAIN FIX)
+        await _channel.QueueDeclareAsync(
+            queue: queueName,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: queueArguments
+        );
+
+        await _channel.QueueDeclareAsync(
+            queue: $"{queueName}-failed",
+            durable: true,
+            exclusive: false,
+            autoDelete: false
+        );
+
+        // ✅ ✅ BIND QUEUES (IMPORTANT)
+        await _channel.QueueBindAsync(queueName, "submission-exchange", "requested");
+        await _channel.QueueBindAsync($"{queueName}-failed", "submission-dlx", "failed");
+
+        // ✅ QoS
+        await _channel.BasicQosAsync(0, 1, false);
+
+        _logger.LogInformation("RabbitMQ setup complete. Queue: {Queue}", queueName);
     }
 
-    protected async override Task<Task> ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Calling TrainingDirectory API...");
+        _logger.LogInformation("Worker started...");
 
-        var trainee = await _client.GetTraineeByIdAsync(1, stoppingToken);
-
-        if (trainee != null)
+        // ✅ API TEST CALL
+        try
         {
-            _logger.LogInformation(
-                "Trainee: {Name}, Course: {Course}, Completed: {CompletedAssignments}",
-                trainee.Name,
-                trainee.Course,
-                trainee.CompletedAssignments);
+            var trainee = await _client.GetTraineeByIdAsync(1, stoppingToken);
+
+            if (trainee != null)
+            {
+                _logger.LogInformation(
+                    "Trainee: {Name}, Course: {Course}, Completed: {CompletedAssignments}",
+                    trainee.Name,
+                    trainee.Course,
+                    trainee.CompletedAssignments);
+            }
+            else
+            {
+                _logger.LogWarning("Could not fetch trainee data");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogWarning("Could not fetch trainee data");
+            _logger.LogError(ex, "API call failed");
         }
 
-        await Task.Delay(5000, stoppingToken);
-
-
-        if (_channel == null || _connection == null || !_connection.IsOpen)
+        // ✅ ✅ RABBITMQ RETRY LOOP (CORRECT)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await InitializeRabbitMq();
+            try
+            {
+                await InitializeRabbitMq();
+                break; // ✅ success → exit loop
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "RabbitMQ not ready. Retrying in 5 seconds...");
+                await Task.Delay(5000, stoppingToken);
+            }
         }
 
-        stoppingToken.ThrowIfCancellationRequested();
+        var queueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName")!;
 
-        var consumer = new AsyncEventingBasicConsumer(_channel!);
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+
         consumer.ReceivedAsync += async (model, ea) =>
         {
             await HandleMessageDeliveryAsync(ea);
         };
-        await _channel!.BasicConsumeAsync(queue: Environment.GetEnvironmentVariable("RabbitMQ_QueueName")!, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
-        return Task.CompletedTask;
+
+        await _channel.BasicConsumeAsync(
+            queue: queueName,
+            autoAck: false,
+            consumer: consumer,
+            cancellationToken: stoppingToken
+        );
+
+        _logger.LogInformation("Worker is now listening to queue: {Queue}", queueName);
+
+        // ✅ keep alive (IMPORTANT)
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
+
 
     private async Task HandleMessageDeliveryAsync(BasicDeliverEventArgs ea)
     {
@@ -102,6 +165,7 @@ public class SubmissionProcessorWorker(
             var job = await dbContext.ProcessingJobs.FirstOrDefaultAsync(j => j.CorrelationId == message.CorrelationId);
             if (job != null)
             {
+                _logger.LogInformation("Job is being processed. CorrelationId: {CorrelationId}", message.CorrelationId);
                 if (job.Status == JobStatus.Completed)
                 {
                     _logger.LogWarning("Job already marked complete for Correlation ID: {CorrelationId}.", message.CorrelationId);
@@ -111,7 +175,7 @@ public class SubmissionProcessorWorker(
 
                 if (job.Attempts > 3)
                 {
-                    _logger.LogWarning("Job processing attempts exceeds 3. Correlation ID: {CorrelationId}", message.CorrelationId);
+                    _logger.LogWarning("Job processing attempts exceeds 3. Job failed. Correlation ID: {CorrelationId}", message.CorrelationId);
                     job.Status = JobStatus.Failed;
                     job.CompletedAt = DateTime.UtcNow;
                     await dbContext.SaveChangesAsync();

@@ -4,8 +4,8 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
- 
- 
+    restart: unless-stopped
+
   rabbitmq:
     image: docker-registry-002.zeuslearning.com/zeuslearning/rabbitmq:3.13.7-management
     container_name: rabbitmq
@@ -16,11 +16,15 @@ services:
       RABBITMQ_DEFAULT_USER: Admin
       RABBITMQ_DEFAULT_PASS: admin@12345
       RABBITMQ_DEFAULT_VHOST: trainee_management_vhost
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
- 
- 
+
   mysql:
     image: docker-registry-002.zeuslearning.com/zeuslearning/mysql:8.0.41
     container_name: mysql
@@ -28,31 +32,90 @@ services:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: trainee_management_db      
+      MYSQL_DATABASE: trainee_management_db
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
     volumes:
       - mysql-data:/data
- 
-  # api:
-  #   # build:
-  #   #   context: .
-  #   #   dockerfile: ./docker/Dockerfile
-  #   #   args:
-  #   #     DOMAIN_OWNER: ${DOMAIN_OWNER}
-  #   #     NUGET_REPO_NAME: ${NUGET_REPO_NAME}
-  #   #     CODEARTIFACT_AUTH_TOKEN: ${CODEARTIFACT_AUTH_TOKEN}
-  #   #     REGION: ${REGION}
-  #   # image: test
-  #   env_file:
-  #     - ./CommonLibrary/.env
-  #   container_name: trainee-api
-  #   depends_on:
-  #     - mysql
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #   restart: on-failure
- 
+
+  api:
+    build:
+        context: .
+        dockerfile: ./traineeManagementAPI/Dockerfile
+        args:
+          DOMAIN_OWNER: ${DOMAIN_OWNER}
+          NUGET_REPO_NAME: ${NUGET_REPO_NAME}
+          CODEARTIFACT_AUTH_TOKEN: ${CODEARTIFACT_AUTH_TOKEN}
+          REGION: ${REGION}
+    # image: traineemanagementsystem-api:latest
+    container_name: trainee-management-api-container
+    env_file:
+      - ./CommonLibrary/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+
+  training_directory_api:
+    build:
+      context: .
+      dockerfile: ./TrainingDirectory.Api/Dockerfile
+      args:
+        DOMAIN_OWNER: ${DOMAIN_OWNER}
+        NUGET_REPO_NAME: ${NUGET_REPO_NAME}
+        CODEARTIFACT_AUTH_TOKEN: ${CODEARTIFACT_AUTH_TOKEN}
+        REGION: ${REGION}
+    # image: traineemanagementsystem-training_directory_api:latest
+    container_name: training-directory-api-container
+    ports:
+      - "8081:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/trainees"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./SubmissionProcessor.Worker/Dockerfile
+      args:
+        DOMAIN_OWNER: ${DOMAIN_OWNER}
+        NUGET_REPO_NAME: ${NUGET_REPO_NAME}
+        CODEARTIFACT_AUTH_TOKEN: ${CODEARTIFACT_AUTH_TOKEN}
+        REGION: ${REGION}
+    # image: traineemanagementsystem-worker:latest
+    container_name: submission-processor-worker-container
+    env_file:
+      - ./CommonLibrary/.env
+    ports:
+      - "8082:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      training_directory_api:
+        condition: service_healthy
+    restart: on-failure
+
 volumes:
   mysql-data:
   rabbitmq_data:

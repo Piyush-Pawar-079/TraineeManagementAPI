@@ -13,7 +13,7 @@ builder.Services.AddHostedService<SubmissionProcessorWorker>();
 
 builder.Services.AddHttpClient<HttpDirectoryClient>("TrainingDirectory.Api", client =>
    {
-   client.BaseAddress = new Uri("http://localhost:5112/");
+   client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("Training_Directory_API_Base_URL") ?? "http://training_directory_api:8080/");
    }).ConfigurePrimaryHttpMessageHandler(() =>
     {
         return new SocketsHttpHandler()

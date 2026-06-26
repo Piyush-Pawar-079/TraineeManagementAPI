@@ -62,6 +62,7 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
     public async Task<TaskAssignmentDetailDTO?> UpdateAsync(int id, UpdateTaskAssignmentRequestDTO updateTaskAssignmentDto)
     {
         await _cache.RemoveAsync($"TaskAssignment:{id}");
+        _logger.LogInformation("Task Assignment cache invalidation while updating. CorrelationId: {CorrelationId}", correlationId);
         var existingTaskAssignment = await _repo.GetTaskAssignmentByIdAsync(id);
 
         if (existingTaskAssignment == null)
