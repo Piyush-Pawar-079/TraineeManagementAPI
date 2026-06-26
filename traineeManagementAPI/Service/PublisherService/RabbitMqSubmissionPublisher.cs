@@ -2,79 +2,21 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 using CommonLibrary.Contract;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.PublisherService;
 public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
 {
     private readonly ConnectionFactory _factory;
-
-    // public RabbitMqSubmissionPublisher(IConfiguration config, ILogger<RabbitMqSubmissionPublisher> logger)
-    // {
-    //     _logger = logger;
-    //     _factory = new ConnectionFactory
-    //     {
-    //         HostName = Environment.GetEnvironmentVariable("RabbitMQ_Host")!,
-    //         Port = int.Parse(Environment.GetEnvironmentVariable("RabbitMQ_Port")!),
-    //         VirtualHost = Environment.GetEnvironmentVariable("RabbitMQ_VHost")!,
-    //         UserName = Environment.GetEnvironmentVariable("RabbitMQ_UserName")!,
-    //         Password = Environment.GetEnvironmentVariable("RabbitMQ_Password")!
-    //     };
-    // }
-
-    // public async Task<bool> PublishSubmissionRequestedAsync(SubmissionProcessingRequested message)
-    // {
-    //     try
-    //     {
-    //         using var connection = await _factory.CreateConnectionAsync();
-    //         using var channel = await connection.CreateChannelAsync();
-
-    //         // Task 3.9: Define a durable queue (Survives broker restart)
-    //         await channel.QueueDeclareAsync(
-    //             queue: QueueName,
-    //             durable: true, 
-    //             exclusive: false,
-    //             autoDelete: false,
-    //             arguments: null
-    //         );
-
-    //         var json = JsonSerializer.Serialize(message);
-    //         var body = Encoding.UTF8.GetBytes(json);
-
-    //         // Task 3.9: Set delivery mode to Persistent (Survives broker restart)
-    //         var properties = new BasicProperties
-    //         {
-    //             DeliveryMode = DeliveryModes.Persistent
-    //         };
-
-    //         await channel.BasicPublishAsync(
-    //             exchange: string.Empty,
-    //             routingKey: QueueName,
-    //             mandatory: true,
-    //             basicProperties: properties,
-    //             body: body
-    //         );
-
-    //         // Task 3.11: Log required tracking variables
-    //         _logger.LogInformation("Successfully published message. MessageId: {MsgId}, CorrelationId: {CorrId}, SubmissionId: {SubId}", 
-    //             message.MessageId, message.CorrelationId, message.SubmissionId);
-
-    //         return true;
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         // Task 3.11: Handle broker unavailability explicitly
-    //         _logger.LogError(ex, "Failed to publish message to RabbitMQ due to broker unavailability.");
-    //         return false;
-    //     }
-    // }
-
     private IConnection _connection = null!;
     private IChannel _channel = null!;
     private readonly ILogger<RabbitMqSubmissionPublisher> _logger;
+    private readonly string correlationId;
 
-    public RabbitMqSubmissionPublisher(ILogger<RabbitMqSubmissionPublisher> logger)
+    public RabbitMqSubmissionPublisher(ILogger<RabbitMqSubmissionPublisher> logger, ICorrelationIdAccessor correlationIdAccessor)
     {
         _logger = logger;
+        correlationId = correlationIdAccessor.GetCorrelationId();
 
         _factory = new ConnectionFactory
         {
@@ -108,6 +50,8 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
 
         await _channel.QueueBindAsync(QueueName, "submission-exchange", "requested");
         await _channel.QueueBindAsync($"{QueueName}-failed", "submission-dlx", "failed");
+
+        _logger.LogInformation("Queue, exchange and routes created successfully. CorrelationId: {CorrelationId}", correlationId);
     }
 
     public async Task<bool> PublishSubmissionRequestedAsync(SubmissionProcessingRequested message)
@@ -143,7 +87,7 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Broker unavailable. Failed to publish message: {MessageId}", message.MessageId);
+            _logger.LogError(ex, "Broker unavailable. Failed to publish message: {MessageId}. CorrelationId: {CorrelationId}", message.MessageId, message.CorrelationId);
             return false;
         }
     }

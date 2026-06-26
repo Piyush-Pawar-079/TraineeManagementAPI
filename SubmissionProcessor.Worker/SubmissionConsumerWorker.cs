@@ -111,6 +111,7 @@ public class SubmissionProcessorWorker(
 
                 if (job.Attempts > 3)
                 {
+                    _logger.LogWarning("Job processing attempts exceeds 3. Correlation ID: {CorrelationId}", message.CorrelationId);
                     job.Status = JobStatus.Failed;
                     job.CompletedAt = DateTime.UtcNow;
                     await dbContext.SaveChangesAsync();
@@ -140,14 +141,18 @@ public class SubmissionProcessorWorker(
     private async Task ProcessBusinessLogicSimulationAsync(SubmissionProcessingRequested msg, ApplicationDBContext dbcontext, ProcessingJob job)
     {
 
+        _logger.LogInformation("Job being processed.  CorrelationId: {CorrelationId}", msg.CorrelationId);
+
         if (string.IsNullOrEmpty(msg.FileId))
         {
+            _logger.LogInformation("Job cannot be processed. File id not available.  CorrelationId: {CorrelationId}", msg.CorrelationId);
             throw new InvalidOperationException("Fatal business structural validation error: File data target path key cannot be null.");
         }
         
         // Simulating transient failure logic for validation verification
         if (msg.ContractVersion == "fail-transient")
         {
+            _logger.LogInformation("Job cannot be processed. Transient failure occurred.  CorrelationId: {CorrelationId}", msg.CorrelationId);
             throw new TimeoutException("Database communication link timed out.");
         }
 
@@ -162,7 +167,7 @@ public class SubmissionProcessorWorker(
                 job.CompletedAt = DateTime.UtcNow;
                 await dbcontext.SaveChangesAsync();
             }
-            _logger.LogError($"Submission File with the file Id - {msg.FileId} is not present in the database");
+            _logger.LogError($"Submission File with the file Id - {msg.FileId} is not present in the database.  CorrelationId: {msg.CorrelationId}");
             throw new FileNotFoundException($"Submission File with the file Id - {msg.FileId} is not present in the database");
         }
         // Save processing updates state securely
@@ -171,6 +176,7 @@ public class SubmissionProcessorWorker(
             job.Status = JobStatus.Completed;
             job.CompletedAt = DateTime.UtcNow;
             await dbcontext.SaveChangesAsync();
+            _logger.LogError($"Job processed successfully. CorrelationId: {msg.CorrelationId}");
         }
         return;
 

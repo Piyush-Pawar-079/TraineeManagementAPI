@@ -4,18 +4,22 @@ using traineeManagementAPI.DTO.MentorDTOs;
 using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.MentorRepository;
+using traineeManagementAPI.Service.CorrelationIdService;
+using traineeManagementAPI.DTO.AuthDTOs;
 
 namespace traineeManagementAPI.Service.MentorService;
 
-public class MentorService(IMentorRepository repository, ILogger<MentorService> logger, IMapper mapper) : IMentorService
+public class MentorService(IMentorRepository repository, ILogger<MentorService> logger, IMapper mapper, ICorrelationIdAccessor correlationIdAccessor) : IMentorService
 {
     private readonly IMentorRepository _repo = repository;
     private readonly ILogger<MentorService> _logger = logger;
     private readonly IMapper _mapper = mapper;
+    private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
 
     public async Task<List<MentorDetailDTO>> GetAllAsync()
     {
         var allMentors = await _repo.GetAllAsync();
+        _logger.LogInformation("Getting all the mentors. CorrelationId: {CorrelationId}", correlationId);
         return _mapper.Map<List<MentorDetailDTO>>(allMentors);
     }
 
@@ -25,7 +29,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (desiredMentor == null)
         {
-            _logger.LogError("Mentor with the specified Id is not available.");
+            _logger.LogError("Mentor with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
@@ -50,6 +54,8 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         Mentor CreatedMentor = await _repo.CreateAsync(newMentor);
 
+        _logger.LogInformation("Mentor Created Successfully. CorrelationId: {CorrelationId}", correlationId);
+
         return _mapper.Map<MentorDetailDTO>(CreatedMentor);
 
     }
@@ -60,7 +66,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (existingMentor == null)
         {
-            _logger.LogError("Mentor with the specified Id is not available.");
+            _logger.LogError("Mentor with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
@@ -85,16 +91,17 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if(desiredMentor == null)
         {
-            _logger.LogError("Something went wrong while updating a new Mentor.");
+            _logger.LogError("Something went wrong while updating a new Mentor. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Mentor");
         }
 
-        _logger.LogInformation("Mentor Updated Successfully");
+        _logger.LogInformation("Mentor Updated Successfully. CorrelationId: {CorrelationId}", correlationId);
         return _mapper.Map<MentorDetailDTO>(desiredMentor);
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
+        _logger.LogInformation("Mentor deleted successfully. CorrelationId: {CorrelationId}", correlationId);
         return await _repo.DeleteAsync(id);
     }
 

@@ -7,10 +7,11 @@ using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using AutoMapper;
 using traineeManagementAPI.Service.RedisService;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.TraineeService;
 
-public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger, IMapper mapper, IRedisService cache) : ITraineeService
+public class TraineeService(ITraineeRepository repository, ILogger<TraineeService> logger, IMapper mapper, IRedisService cache, ICorrelationIdAccessor correlationIdAccessor) : ITraineeService
 {
 
     private class SortFields
@@ -26,6 +27,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
     private readonly ILogger<TraineeService> _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly IRedisService _cache = cache;
+    private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
 
     public async Task<List<TraineeDetailDTO>> GetAllTrainees()
     {
@@ -43,17 +45,17 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (trainee != null)
         {
-            _logger.LogInformation("Trainee with the specified Id found in redis cache.");
+            _logger.LogInformation("Trainee with the specified Id found in redis cache. Cache hit case. CorrelationId: {CorrelationId}", correlationId);
             return trainee;
         }
 
-        _logger.LogError("Trainee not found in redis cache, fetching from database.");
+        _logger.LogError("Trainee not found in redis cache, fetching from database. Cache miss case. CorrelationId: {CorrelationId}", correlationId);
 
         var  dbTrainee = await _repository.GetByIdAsync(id);
 
         if (dbTrainee == null)
         {
-            _logger.LogError("Trainee with the specified Id is not available.");
+            _logger.LogError("Trainee with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
@@ -72,7 +74,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (existingTrainee == null)
         {
-            _logger.LogError("Trainee with the specified Id is not available.");
+            _logger.LogError("Trainee with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
@@ -97,7 +99,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if(desiredTrainee == null)
         {
-            _logger.LogError("Something went wrong while updating a new Trainee.");
+            _logger.LogError("Something went wrong while updating a new Trainee. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Trainee");
         }
 
@@ -125,14 +127,14 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         var createdTrainee = await _repository.CreateAsync(newTrainee);
 
-        _logger.LogInformation("Trainee Created Successfully");
+        _logger.LogInformation("Trainee Created Successfully. CorrelationId: {CorrelationId}", correlationId);
         return _mapper.Map<TraineeDetailDTO>(createdTrainee);
     }
 
     public async Task<bool> DeleteTrainee(int id)
     {
         await _cache.RemoveAsync($"Trainee:{id}");
-        _logger.LogInformation("Trainee Deleted Successfully");
+        _logger.LogInformation("Trainee Deleted Successfully. CorrelationId: {CorrelationId}", correlationId);
         return await _repository.DeleteAsync(id);
     }
 

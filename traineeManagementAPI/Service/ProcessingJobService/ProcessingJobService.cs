@@ -3,14 +3,16 @@ using CommonLibrary.Models;
 using traineeManagementAPI.DTO.ProcessingJobDTOs;
 using traineeManagementAPI.Exceptions;
 using traineeManagementAPI.Repositories.ProcessingJobRepository;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.ProcessingJobService;
 
-public class ProcessingJobService(IProcessingJobRepository repo, ILogger<ProcessingJobService> logger, IMapper mapper): IProcessingJobService
+public class ProcessingJobService(IProcessingJobRepository repo, ILogger<ProcessingJobService> logger, IMapper mapper, ICorrelationIdAccessor correlationIdAccessor): IProcessingJobService
 {
     private readonly IProcessingJobRepository _repo = repo;
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<ProcessingJobService> _logger = logger;
+    private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
 
     public async Task<ProcessingJobResponseDTO> GetProcessingJobById(int id)
     {
@@ -18,7 +20,7 @@ public class ProcessingJobService(IProcessingJobRepository repo, ILogger<Process
 
         if (job == null)
         {
-            _logger.LogError($"Processing Job with the specified Id - {id} is not available");
+            _logger.LogError($"Processing Job with the specified Id - {id} is not available. CorrelationId: {correlationId}");
             throw new NotFoundException($"Processing Job with the specified Id - {id} is not available");
         }
 

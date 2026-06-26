@@ -32,6 +32,8 @@ using traineeManagementAPI.Service.PublisherService;
 using CommonLibrary.Data;
 using traineeManagementAPI.Repositories.ProcessingJobRepository;
 using traineeManagementAPI.Service.ProcessingJobService;
+using traineeManagementAPI.Service.CorrelationIdService;
+using traineeManagementAPI.Middleware;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -165,6 +167,8 @@ builder.Services.AddScoped<RabbitMqSubmissionPublisher>();
 builder.Services.AddScoped<IProcessingJobRepository, ProcessingJobRepository>();
 builder.Services.AddScoped<IProcessingJobService, ProcessingJobService>();
 
+builder.Services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -173,6 +177,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<CorrelationIdAccessor>();
 
 app.UseAuthentication();
 app.UseAuthorization();

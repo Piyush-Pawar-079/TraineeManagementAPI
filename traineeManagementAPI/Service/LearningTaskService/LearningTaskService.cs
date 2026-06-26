@@ -1,21 +1,23 @@
 using AutoMapper;
 using traineeManagementAPI.DTO.LearningTaskDTOs;
-using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.LearningTaskRepository;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.LearningTaskService;
 
-public class LearningTaskService(ILearningTaskRepository repository, ILogger<LearningTaskService> logger, IMapper mapper) : ILearningTaskService
+public class LearningTaskService(ILearningTaskRepository repository, ILogger<LearningTaskService> logger, IMapper mapper, ICorrelationIdAccessor correlationIdAccessor) : ILearningTaskService
 {
     private readonly ILearningTaskRepository _repo = repository;
     private readonly ILogger<LearningTaskService> _logger = logger;
     private readonly IMapper _mapper = mapper;
+    private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
 
     public async Task<List<LearningTaskDetailDTO>> GetAllAsync()
     {
         var allLearningTasks = await _repo.GetAllAsync();
+        _logger.LogInformation("Getting all Learning Tasks. CorrelationId: {CorrelationId}", correlationId);
         return _mapper.Map<List<LearningTaskDetailDTO>>(allLearningTasks);
     }
 
@@ -25,7 +27,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (desiredLearningTask == null)
         {
-            _logger.LogError("LearningTask with the specified Id is not available.");
+            _logger.LogError("LearningTask with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
@@ -50,6 +52,8 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         LearningTask CreatedLearningTask = await _repo.CreateAsync(newLearningTask);
 
+        _logger.LogInformation("Learning Task created successfully. CorrelationId: {CorrelationId}", correlationId);
+
         return _mapper.Map<LearningTaskDetailDTO>(CreatedLearningTask);
 
     }
@@ -60,7 +64,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (existingLearningTask == null)
         {
-            _logger.LogError("LearningTask with the specified Id is not available.");
+            _logger.LogError("LearningTask with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
@@ -85,15 +89,16 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if(desiredTrainee == null)
         {
-            _logger.LogError("Something went wrong while updating a new Learning Task.");
+            _logger.LogError("Something went wrong while updating a new Learning Task. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Learning Task");
         }
-        _logger.LogInformation("Learning Task Updated Successfully");
+        _logger.LogInformation("Learning Task Updated Successfully. CorrelationId: {CorrelationId}", correlationId);
         return _mapper.Map<LearningTaskDetailDTO>(desiredTrainee);
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
+        _logger.LogInformation("Learning Task Deleted successfully. CorrelationId: {CorrelationId}", correlationId);
         return await _repo.DeleteAsync(id);
     }
 

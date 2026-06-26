@@ -3,14 +3,16 @@ using traineeManagementAPI.DTO.ReviewDTOs;
 using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.ReviewRepository;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.ReviewService;
 
-public class ReviewService(IReviewRepository repository, ILogger<ReviewService> logger, IMapper mapper) : IReviewService
+public class ReviewService(IReviewRepository repository, ILogger<ReviewService> logger, IMapper mapper, ICorrelationIdAccessor correlationIdAccessor) : IReviewService
 {
     private readonly IReviewRepository _repo = repository;
     private readonly ILogger<ReviewService> _logger = logger;
     private readonly IMapper _mapper = mapper;
+    private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
 
     public async Task<List<ReviewDetailDTO>> GetAllAsync()
     {
@@ -23,9 +25,9 @@ public class ReviewService(IReviewRepository repository, ILogger<ReviewService> 
         var desiredReview = await _repo.GetReviewByIdAsync(id);
         if (desiredReview == null)
         {
-            _logger.LogError("Review with the specified Id is not available.");
+            _logger.LogError("Review with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Review with the id - {id} not found");
-        }
+        } 
         return _mapper.Map<ReviewDetailDTO>(desiredReview);
 
     }
@@ -48,7 +50,7 @@ public class ReviewService(IReviewRepository repository, ILogger<ReviewService> 
 
         if (CreatedReview == null)
         {
-            _logger.LogError("Something went wrong while creating a new Review.");
+            _logger.LogError("Something went wrong while creating a new Review. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while creating a new Review");
         }
         return _mapper.Map<ReviewDetailDTO>(CreatedReview);

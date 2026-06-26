@@ -6,8 +6,8 @@ using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.SubmissionFileRepository;
 using traineeManagementAPI.Service.PublisherService;
-using traineeManagementAPI.DTO.ProcessingJobDTOs;
 using traineeManagementAPI.Service.ProcessingJobService;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.FileStorageService;
 
@@ -18,17 +18,17 @@ public class LocalFileStorageService: IFileStorageService
     private readonly ILogger<LocalFileStorageService> _logger;
     private readonly IProcessingJobService _jobService;
     private readonly IMapper _mapper;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly string correlationId;
     private readonly RabbitMqSubmissionPublisher _publisher;
     private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt", ".zip"];
 
-    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, IProcessingJobService jobService)
+    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IProcessingJobService jobService, ICorrelationIdAccessor correlationIdAccessor)
     {
         _repo = repo;
         _logger = logger;
         _uploadPath = "../CommonLibrary/uploads";
         _mapper = mapper;
-        _httpContextAccessor = httpContextAccessor;
+        correlationId = correlationIdAccessor.GetCorrelationId();
         _publisher = publisher;
         _jobService = jobService;
 
@@ -42,7 +42,7 @@ public class LocalFileStorageService: IFileStorageService
     {
         if (createDTO.File == null || createDTO.File.Length == 0)
         {
-            _logger.LogError("File upload failed");
+            _logger.LogError("File upload failed. CorrelationId: {CorrelationId}", correlationId);
             throw new ArgumentException("No file selected to upload");
         }
         // if (createDTO.File.Length > 5 * 1024 * 1024)
@@ -55,7 +55,7 @@ public class LocalFileStorageService: IFileStorageService
 
         if (string.IsNullOrEmpty(extention) || !allowedExtensions.Contains(extention))
         {
-            _logger.LogError("File upload failed because of invalid file extention");
+            _logger.LogError("File upload failed because of invalid file extention. CorrelationId: {CorrelationId}", correlationId);
             throw new BadRequestException("Invalid File type.");
         }
 
@@ -82,12 +82,11 @@ public class LocalFileStorageService: IFileStorageService
 
         if (result == null)
         {
-            _logger.LogError("Something went wrong while saving the file to the database");
+            _logger.LogError("Something went wrong while saving the file to the database. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while saving the file to the database");
         }
-        _logger.LogInformation("File saved successfully");
+        _logger.LogInformation("File saved successfully. CorrelationId: {CorrelationId}", correlationId);
 
-        var correlationId = _httpContextAccessor.HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
         var job = new ProcessingJob
         {
             CorrelationId = correlationId,
@@ -111,10 +110,10 @@ public class LocalFileStorageService: IFileStorageService
         
         if (!isQueued)
         {
-            _logger.LogInformation(503, "Database updated, but processing queue is currently unavailable. Retry later.");
+            _logger.LogInformation(503, "Database updated, but processing queue is currently unavailable. Retry later. CorrelationId: {CorrelationId}", correlationId);
         }
         else
-            _logger.LogInformation("Message added to the processing queue");
+            _logger.LogInformation("Message added to the processing queue. CorrelationId: {CorrelationId}", correlationId);
 
         var newResult =  _mapper.Map<SubmissionFileResponseDTO>(result);
         newResult.CorrelationId = correlationId;
@@ -128,7 +127,7 @@ public class LocalFileStorageService: IFileStorageService
 
         if (file == null)
         {
-            _logger.LogError($"File with the specified id - {id} not found");
+            _logger.LogError($"File with the specified id - {id} not found. CorrelationId: {correlationId}");
             throw new NotFoundException($"File with the specified id - {id} not found");
         }
         
@@ -136,22 +135,28 @@ public class LocalFileStorageService: IFileStorageService
 
         if (!File.Exists(filePath))
         {
-            _logger.LogError("File is not available at the specified path");
+            _logger.LogError("File is not available at the specified path. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException("File not found");
         }
 
         byte[] bytes = File.ReadAllBytes(filePath);
-
+        _logger.LogInformation("File ready to be downloaded. CorrelationId: {CorrelationId}", correlationId);
         return (bytes, file.ContentType, file.OriginalFileName);
     }
 
     public string GenerateFileChecksum(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
+        {
+            _logger.LogInformation("File path is not present. CorrelationId: {CorrelationId}", correlationId);
             throw new ArgumentException("File path is required.");
+        }
 
         if (!File.Exists(filePath))
+        {
+            _logger.LogInformation("File does not exist in the path specified. CorrelationId: {CorrelationId}", correlationId);
             throw new FileNotFoundException("File does not exist.", filePath);
+        }
 
         using var sha256 = SHA256.Create();
         using var stream = File.OpenRead(filePath);
@@ -169,7 +174,7 @@ public class LocalFileStorageService: IFileStorageService
 
         if (submissionFile == null)
         {
-            _logger.LogError($"File with the specified id - {id} not found");
+            _logger.LogError($"File with the specified id - {id} not found. CorrelationId: {correlationId}");
             throw new NotFoundException($"File with the specified id - {id} not found");
         }
 
@@ -177,12 +182,12 @@ public class LocalFileStorageService: IFileStorageService
 
         if (!File.Exists(filePath))
         {
-            _logger.LogError("File not found while deleting.");
+            _logger.LogError("File not found while deleting. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException("File not found.");
         }
 
         File.Delete(filePath);
         await _repo.DeleteAsync(submissionFile);
-        _logger.LogInformation("File deleted successfully");
+        _logger.LogInformation("File deleted successfully. CorrelationId: {CorrelationId}", correlationId);
     }
 }

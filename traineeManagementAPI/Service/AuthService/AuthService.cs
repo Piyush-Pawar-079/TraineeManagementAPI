@@ -9,14 +9,16 @@ using traineeManagementAPI.DTO.UserDTOs;
 using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.UserRepository;
+using traineeManagementAPI.Service.CorrelationIdService;
 
 namespace traineeManagementAPI.Service.AuthService;
 
-public class AuthService(IUserRepository repository, IConfiguration configuration, IMapper mapper, ILogger<AuthService> logger) : IAuthService
+public class AuthService(IUserRepository repository, IConfiguration configuration, IMapper mapper, ILogger<AuthService> logger, ICorrelationIdAccessor correlationIdAccessor) : IAuthService
 {
     private readonly IUserRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<AuthService> _logger = logger;
+    private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
 
     public async Task<UserResponseDTO?> Register(CreateUserRequestDTO createUserRequestDTO)
     {
@@ -26,7 +28,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
 
         if (foundUser != null)
         {
-            _logger.LogError("User registration failed");
+            _logger.LogError("User registration failed. User with the same Username already exists. CorrelationId: {CorrelationId}", correlationId);
             throw new BadRequestException("User with the same username already exists");
         }
 
@@ -48,7 +50,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
 
         var createdUser = await _repository.CreateAsync(newUser);
         
-        _logger.LogInformation("User registered successfully");
+        _logger.LogInformation("User registered successfully. CorrelationId: {CorrelationId}", correlationId);
         return _mapper.Map<UserResponseDTO>(createdUser);
     }
 
@@ -60,7 +62,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
 
         if (found == null)
         {
-            _logger.LogError("User login failed");
+            _logger.LogError("User login failed. User with this Username not found. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"User with the username {loginDTO.Username} not found");
         }
 
@@ -78,13 +80,13 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
             == PasswordVerificationResult.Failed
         )
         {
-            _logger.LogInformation("User login failed because of wrong password");
+            _logger.LogInformation("User login failed because of wrong password. CorrelationId: {CorrelationId}", correlationId);
             throw new BadRequestException("Password Incorrect");
         }
 
         string token = GenerateToken(userRequestDTO);
 
-        _logger.LogInformation("User login successfull");
+        _logger.LogInformation("User login successfull. CorrelationId: {CorrelationId}", correlationId);
         return new LoginResponseDTO
         {
             Token = token,
@@ -115,6 +117,8 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
             expires: DateTime.UtcNow.AddMinutes(60),
             signingCredentials: creds
         );
+
+        _logger.LogInformation("JWT Token created successfully. CorrelationId: {CorrelationId}", correlationId);
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 

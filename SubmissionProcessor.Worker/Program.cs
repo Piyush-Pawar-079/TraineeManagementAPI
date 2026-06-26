@@ -3,9 +3,7 @@ using DotNetEnv;
 using CommonLibrary.Data;
 using Microsoft.EntityFrameworkCore;
 using SubmissionProcessor.Worker.Clients;
-using CommonLibrary.DTO;
 using Polly;
-using Polly.Extensions.Http;
 using System.Net;
 
 var builder = Host.CreateApplicationBuilder(args);
