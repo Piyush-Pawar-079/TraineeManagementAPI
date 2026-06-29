@@ -40,7 +40,7 @@ services:
       retries: 10
     restart: unless-stopped
     volumes:
-      - mysql-data:/data
+      - mysql-data:/var/lib/mysql
 
   api:
     build:

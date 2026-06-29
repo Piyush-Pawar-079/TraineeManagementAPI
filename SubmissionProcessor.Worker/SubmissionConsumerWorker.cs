@@ -40,18 +40,15 @@ public class SubmissionProcessorWorker(
 
         var queueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName") ?? "submission-processor";
 
-        // ✅ ✅ CRITICAL: Declare SAME exchange as publisher
         await _channel.ExchangeDeclareAsync("submission-exchange", ExchangeType.Direct, durable: true);
         await _channel.ExchangeDeclareAsync("submission-dlx", ExchangeType.Direct, durable: true);
 
-        // ✅ ✅ SAME arguments as publisher
         IDictionary<string, object?> queueArguments = new Dictionary<string, object?>
         {
             { "x-dead-letter-exchange", "submission-dlx" },
             { "x-dead-letter-routing-key", "failed" }
         };
 
-        // ✅ ✅ DECLARE QUEUES (MAIN FIX)
         await _channel.QueueDeclareAsync(
             queue: queueName,
             durable: true,
@@ -67,11 +64,9 @@ public class SubmissionProcessorWorker(
             autoDelete: false
         );
 
-        // ✅ ✅ BIND QUEUES (IMPORTANT)
         await _channel.QueueBindAsync(queueName, "submission-exchange", "requested");
         await _channel.QueueBindAsync($"{queueName}-failed", "submission-dlx", "failed");
 
-        // ✅ QoS
         await _channel.BasicQosAsync(0, 1, false);
 
         _logger.LogInformation("RabbitMQ setup complete. Queue: {Queue}", queueName);
@@ -81,7 +76,6 @@ public class SubmissionProcessorWorker(
     {
         _logger.LogInformation("Worker started...");
 
-        // ✅ API TEST CALL
         try
         {
             var trainee = await _client.GetTraineeByIdAsync(1, stoppingToken);
@@ -103,19 +97,17 @@ public class SubmissionProcessorWorker(
         {
             _logger.LogError(ex, "API call failed");
         }
-
-        // ✅ ✅ RABBITMQ RETRY LOOP (CORRECT)
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 await InitializeRabbitMq();
-                break; // ✅ success → exit loop
+                break;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "RabbitMQ not ready. Retrying in 5 seconds...");
-                await Task.Delay(5000, stoppingToken);
+                await Task.Delay(10000, stoppingToken);
             }
         }
 
@@ -137,7 +129,6 @@ public class SubmissionProcessorWorker(
 
         _logger.LogInformation("Worker is now listening to queue: {Queue}", queueName);
 
-        // ✅ keep alive (IMPORTANT)
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 

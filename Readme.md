@@ -2,7 +2,7 @@
 Trainee Management API
  
 ## Technology Used
-.Net, Asp.Net core, EF core
+.Net, Asp.Net core, EF core, MySQL, Docker, Redis, RabbitMQ
  
 ## How to Run
 run `dotnet run` in the root of the project directory  
@@ -11,10 +11,8 @@ run `dotnet run` in the root of the project directory
 
 - First import required packages and make sure all the packages are of the same version so that we do not get any version mismatch error.
 - Update the Program.cs file for using the MySql database instead of In-memory datase.
-- In appsettings.json add another entry for Connection string like this: 
-  "ConnectionStrings": {
-    "DefaultConnection": "server=localhost;port=3306;database=trainee_management_db;user=root;password=root;"
-  },
+- In .env add entry for Connection string like this: 
+    DefaultConnection=server=localhost;port=3306;database=trainee_management_db;user=root;password=root;
 - Run dotnet build to make sure there are no errors.
 - Run the migration command => dotnet ef migrations add InitialCreate
 - Once the migration is completed run this command to make tables in the database => dotnet ef database update
@@ -65,11 +63,22 @@ password = "admin@12345"
 
 - POST   /api/submissions 
 - GET    /api/submissions 
-- GET    /api/submissions/{id} 
+- GET    /api/submissions/{id}
+- POST   /api/submissions/{id}/files 
+- GET    /api/submissions/{id}/summary
 
 - POST   /api/reviews 
 - GET    /api/reviews 
 - GET    /api/reviews/{id}
+
+- GET    /api/submission-files/{id}
+- GET    /api/submission-files/{id}/download
+- DELETE /api/submission-files/{id}
+
+- GET    /api/processing-jobs/{id}
+
+- GET    /health/live
+- GET    /health/ready
 
 ## Sample Request JSON
 
@@ -126,10 +135,10 @@ Sample POST /api/task-assignment request:
   "traineeId": 1,
   "mentorId": 1,
   "learningTaskId": 1,
-  "assignedDate": "2026-06-15T10:08:57.407Z",
-  "dueDate": "2026-06-15T10:08:57.407Z",
+  "assignedDate": "2026-06-29T13:06:29.026Z",
+  "dueDate": "2026-06-29T13:06:29.026Z",
   "status": "Assigned",
-  "remarks": ""
+  "remarks": "string"
 }
 
 Sample PUT /api/task-assignment/{1}/status request:
@@ -139,22 +148,34 @@ Sample PUT /api/task-assignment/{1}/status request:
 
 Sample POST /api/submissions request:
 {
-  "taskAssignmentId": 1,
-  "submissionUrl": "https://localhost:9000",
-  "notes": "Nothing",
-  "submittedDate": "2026-06-15T10:14:07.178Z",
+  "taskAssignmentId": 2,
+  "submissionUrl": "http://github.com",
+  "notes": "Something",
+  "submittedDate": "2026-06-29T13:09:10.510Z",
   "status": "Submitted"
 }
 
 Sample POST /api/reviews request:
 {
-  "submissionId": 1,
+  "submissionId": 2,
   "mentorId": 1,
-  "feedback": "Good implementation",
-  "score": 9/10,
+  "feedback": "Something",
+  "score": 10,
   "reviewStatus": "Accepted",
-  "reviewedDate": "2026-06-15T10:16:43.838Z"
+  "reviewedDate": "2026-06-29T13:37:02.337Z"
 }
+
+Sample POST /api/submission/{id}/files
+{
+  "submissionId": 1,
+  "File": select from the file explorer
+}
+
+Sample DELETE /api/submission-files/{id}
+{
+  "submissionFileId": 1
+}
+
  
 ## Sample Response JSON
 
@@ -190,27 +211,23 @@ Sample GET /api/trainees?pageNumber=1&pageSize=10&search=piyush&status=Inactive 
     "email": "piyushpawar@example.com",
     "techStack": ".net",
     "status": "Inactive",
-    "taskAssignment": [],
-    "createDate": "2026-06-15T09:56:05.391767",
-    "updateDate": "2026-06-15T09:57:17.173395"
+    "createdDate": "0001-01-01T00:00:00",
+    "updatedDate": "2026-06-29T12:59:47.708905"
   }
 ]
  
 Sample GET /api/trainees/{id} response:
 
-[
-  {
-    "id": 1,
-    "firstName": "Piyush",
-    "lastName": "Pawar",
-    "email": "piyushpawar@example.com",
-    "techStack": ".net",
-    "status": "Inactive",
-    "taskAssignment": [],
-    "createDate": "2026-06-15T09:56:05.391767",
-    "updateDate": "2026-06-15T09:57:17.173395"
-  }
-]
+{
+  "id": 1,
+  "firstName": "Piyush",
+  "lastName": "Pawar",
+  "email": "piyushpawar@example.com",
+  "techStack": ".net",
+  "status": "Inactive",
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "2026-06-29T12:59:47.708905"
+}
  
 Sample POST /api/trainees response:
 {
@@ -220,12 +237,12 @@ Sample POST /api/trainees response:
   "email": "piyushpawar@example.com",
   "techStack": ".net",
   "status": "Active",
-  "taskAssignment": [],
-  "createDate": "2026-06-15T09:56:05.3917677Z",
-  "updateDate": "2026-06-15T09:56:05.391789Z"
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "0001-01-01T00:00:00"
 }
  
 Sample PUT /api/trainees/{id} response:
+
 {
   "id": 1,
   "firstName": "Piyush",
@@ -233,12 +250,12 @@ Sample PUT /api/trainees/{id} response:
   "email": "piyushpawar@example.com",
   "techStack": ".net",
   "status": "Inactive",
-  "taskAssignment": [],
-  "createDate": "2026-06-15T09:56:05.391767",
-  "updateDate": "2026-06-15T09:57:17.1733952Z"
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "2026-06-29T12:59:47.7089054Z"
 }
 
 Sample GET /api/mentor response:
+
 [
   {
     "id": 1,
@@ -246,11 +263,9 @@ Sample GET /api/mentor response:
     "lastName": "Deshmukh",
     "email": "omdeshmukh@example.com",
     "expertise": "Java Spring Boot",
-    "status": "Inactive",
-    "taskAssignments": [],
-    "reviews": [],
-    "createdDate": "2026-06-15T09:59:11.51592",
-    "updatedDate": "2026-06-15T10:00:48.726323"
+    "status": "Active",
+    "createdDate": "0001-01-01T00:00:00",
+    "updatedDate": "0001-01-01T00:00:00"
   }
 ]
 
@@ -261,14 +276,13 @@ Sample GET /api/mentor/{1} response:
   "lastName": "Deshmukh",
   "email": "omdeshmukh@example.com",
   "expertise": "Java Spring Boot",
-  "status": "Inactive",
-  "taskAssignments": [],
-  "reviews": [],
-  "createdDate": "2026-06-15T09:59:11.51592",
-  "updatedDate": "2026-06-15T10:00:48.726323"
+  "status": "Active",
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "0001-01-01T00:00:00"
 }
 
 Sample POST /api/mentor response:
+
 {
   "id": 1,
   "firstName": "Om",
@@ -276,27 +290,25 @@ Sample POST /api/mentor response:
   "email": "omdeshmukh@example.com",
   "expertise": "Java Spring Boot",
   "status": "Active",
-  "taskAssignments": [],
-  "reviews": [],
-  "createdDate": "2026-06-15T09:59:11.51592Z",
-  "updatedDate": "2026-06-15T09:59:11.5159939Z"
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "0001-01-01T00:00:00"
 }
 
 Sample PUT /api/mentor/{1} response:
+
 {
   "id": 1,
   "firstName": "Om",
   "lastName": "Deshmukh",
   "email": "omdeshmukh@example.com",
   "expertise": "Java Spring Boot",
-  "status": "Inactive",
-  "taskAssignments": [],
-  "reviews": [],
-  "createdDate": "2026-06-15T09:59:11.51592",
-  "updatedDate": "2026-06-15T10:00:48.7263236Z"
+  "status": "Active",
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "0001-01-01T00:00:00"
 }
 
 Sample GET /api/learning-tasks response:
+
 [
   {
     "id": 1,
@@ -304,10 +316,9 @@ Sample GET /api/learning-tasks response:
     "description": "Building a backend for trainee management",
     "expectedTechStack": ".net, asp.net core, ef core",
     "dueDate": "2026-06-15T10:03:59.092",
-    "status": "Published",
-    "taskAssignment": [],
-    "createdDate": "2026-06-15T10:04:56.971705",
-    "updatedDate": "2026-06-15T10:07:05.999999"
+    "status": "Draft",
+    "createdDate": "0001-01-01T00:00:00",
+    "updatedDate": "0001-01-01T00:00:00"
   }
 ]
 
@@ -325,6 +336,7 @@ Sample GET /api/learning-tasks/{1} response:
 }
 
 Sample POST /api/learning-tasks response:
+
 {
   "id": 1,
   "title": "Trainee Management API",
@@ -332,12 +344,12 @@ Sample POST /api/learning-tasks response:
   "expectedTechStack": ".net, asp.net core, ef core",
   "dueDate": "2026-06-15T10:03:59.092Z",
   "status": "Draft",
-  "taskAssignment": [],
-  "createdDate": "2026-06-15T10:04:56.9717059Z",
-  "updatedDate": "2026-06-15T10:04:56.971727Z"
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "0001-01-01T00:00:00"
 }
 
 Sample PUT /api/learning-tasks/{1} response:
+
 {
   "id": 1,
   "title": "Trainee Management API",
@@ -345,308 +357,112 @@ Sample PUT /api/learning-tasks/{1} response:
   "expectedTechStack": ".net, asp.net core, ef core",
   "dueDate": "2026-06-15T10:03:59.092",
   "status": "Published",
-  "taskAssignment": [],
-  "createdDate": "2026-06-15T10:04:56.971705",
-  "updatedDate": "2026-06-15T10:07:05.9999997Z"
+  "createdDate": "0001-01-01T00:00:00",
+  "updatedDate": "2026-06-29T13:05:43.813875Z"
 }
 
 Sample GET /api/task-assignment response:
 [
   {
     "id": 1,
-    "traineeId": 1,
     "trainee": {
       "id": 1,
       "firstName": "Piyush",
-      "lastName": "Pawar",
-      "email": "piyushpawar@example.com",
-      "techStack": ".net",
-      "status": "Inactive",
-      "createdDate": "2026-06-15T09:56:05.391767",
-      "updatedDate": "2026-06-15T09:57:17.173395",
-      "taskAssignments": [
-        {
-          "id": 1,
-          "traineeId": 1,
-          "mentorId": 1,
-          "learningTaskId": 1,
-          "submission": [],
-          "assignedDate": "2026-06-15T10:08:57.407",
-          "dueDate": "2026-06-15T10:08:57.407",
-          "status": "InProgress",
-          "remarks": ""
-        }
-      ]
+      "lastName": "Pawar"
     },
-    "mentorId": 1,
     "mentor": {
       "id": 1,
       "firstName": "Om",
-      "lastName": "Deshmukh",
-      "email": "omdeshmukh@example.com",
-      "expertise": "Java Spring Boot",
-      "status": "Inactive",
-      "createdDate": "2026-06-15T09:59:11.51592",
-      "updatedDate": "2026-06-15T10:00:48.726323",
-      "taskAssignments": [
-        {
-          "id": 1,
-          "traineeId": 1,
-          "mentorId": 1,
-          "learningTaskId": 1,
-          "submission": [],
-          "assignedDate": "2026-06-15T10:08:57.407",
-          "dueDate": "2026-06-15T10:08:57.407",
-          "status": "InProgress",
-          "remarks": ""
-        }
-      ],
-      "reviews": []
+      "lastName": "Deshmukh"
     },
-    "learningTaskId": 1,
     "learningTask": {
       "id": 1,
       "title": "Trainee Management API",
-      "description": "Building a backend for trainee management",
-      "expectedTechStack": ".net, asp.net core, ef core",
-      "dueDate": "2026-06-15T10:03:59.092",
-      "status": "Published",
-      "createdDate": "2026-06-15T10:04:56.971705",
-      "updatedDate": "2026-06-15T10:07:05.999999",
-      "taskAssignments": [
-        {
-          "id": 1,
-          "traineeId": 1,
-          "mentorId": 1,
-          "learningTaskId": 1,
-          "submission": [],
-          "assignedDate": "2026-06-15T10:08:57.407",
-          "dueDate": "2026-06-15T10:08:57.407",
-          "status": "InProgress",
-          "remarks": ""
-        }
-      ]
+      "description": "Building a backend for trainee management"
     },
-    "submission": [],
-    "assignedDate": "2026-06-15T10:08:57.407",
-    "dueDate": "2026-06-15T10:08:57.407",
-    "status": "InProgress",
-    "remarks": ""
+    "assignedDate": "2026-06-29T13:06:29.026",
+    "dueDate": "2026-06-29T13:06:29.026",
+    "status": "Assigned",
+    "remarks": "string"
   }
 ]
 
 Sample GET /api/task-assignment/{1} response:
 {
   "id": 1,
-  "traineeId": 1,
   "trainee": {
     "id": 1,
     "firstName": "Piyush",
-    "lastName": "Pawar",
-    "email": "piyushpawar@example.com",
-    "techStack": ".net",
-    "status": "Inactive",
-    "createdDate": "2026-06-15T09:56:05.391767",
-    "updatedDate": "2026-06-15T09:57:17.173395",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ]
+    "lastName": "Pawar"
   },
-  "mentorId": 1,
   "mentor": {
     "id": 1,
     "firstName": "Om",
-    "lastName": "Deshmukh",
-    "email": "omdeshmukh@example.com",
-    "expertise": "Java Spring Boot",
-    "status": "Inactive",
-    "createdDate": "2026-06-15T09:59:11.51592",
-    "updatedDate": "2026-06-15T10:00:48.726323",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ],
-    "reviews": []
+    "lastName": "Deshmukh"
   },
-  "learningTaskId": 1,
   "learningTask": {
     "id": 1,
     "title": "Trainee Management API",
-    "description": "Building a backend for trainee management",
-    "expectedTechStack": ".net, asp.net core, ef core",
-    "dueDate": "2026-06-15T10:03:59.092",
-    "status": "Published",
-    "createdDate": "2026-06-15T10:04:56.971705",
-    "updatedDate": "2026-06-15T10:07:05.999999",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ]
+    "description": "Building a backend for trainee management"
   },
-  "submission": [],
-  "assignedDate": "2026-06-15T10:08:57.407",
-  "dueDate": "2026-06-15T10:08:57.407",
-  "status": "InProgress",
-  "remarks": ""
+  "assignedDate": "2026-06-29T13:06:29.026",
+  "dueDate": "2026-06-29T13:06:29.026",
+  "status": "Assigned",
+  "remarks": "string"
 }
 
 Sample POST /api/task-assignment response:
 {
   "id": 1,
-  "traineeId": 1,
   "trainee": null,
-  "mentorId": 1,
   "mentor": null,
-  "learningTaskId": 1,
   "learningTask": null,
-  "submission": [],
-  "assignedDate": "2026-06-15T10:08:57.407Z",
-  "dueDate": "2026-06-15T10:08:57.407Z",
+  "assignedDate": "2026-06-29T13:06:29.026Z",
+  "dueDate": "2026-06-29T13:06:29.026Z",
   "status": "Assigned",
-  "remarks": ""
+  "remarks": "string"
 }
 
 Sample PUT /api/task-assignment/{1}/status response:
 {
   "id": 1,
-  "traineeId": 1,
   "trainee": {
     "id": 1,
     "firstName": "Piyush",
-    "lastName": "Pawar",
-    "email": "piyushpawar@example.com",
-    "techStack": ".net",
-    "status": "Inactive",
-    "createdDate": "2026-06-15T09:56:05.391767",
-    "updatedDate": "2026-06-15T09:57:17.173395",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ]
+    "lastName": "Pawar"
   },
-  "mentorId": 1,
   "mentor": {
     "id": 1,
     "firstName": "Om",
-    "lastName": "Deshmukh",
-    "email": "omdeshmukh@example.com",
-    "expertise": "Java Spring Boot",
-    "status": "Inactive",
-    "createdDate": "2026-06-15T09:59:11.51592",
-    "updatedDate": "2026-06-15T10:00:48.726323",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ],
-    "reviews": []
+    "lastName": "Deshmukh"
   },
-  "learningTaskId": 1,
   "learningTask": {
     "id": 1,
     "title": "Trainee Management API",
-    "description": "Building a backend for trainee management",
-    "expectedTechStack": ".net, asp.net core, ef core",
-    "dueDate": "2026-06-15T10:03:59.092",
-    "status": "Published",
-    "createdDate": "2026-06-15T10:04:56.971705",
-    "updatedDate": "2026-06-15T10:07:05.999999",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ]
+    "description": "Building a backend for trainee management"
   },
-  "submission": [],
-  "assignedDate": "2026-06-15T10:08:57.407",
-  "dueDate": "2026-06-15T10:08:57.407",
+  "assignedDate": "2026-06-29T13:06:29.026",
+  "dueDate": "2026-06-29T13:06:29.026",
   "status": "InProgress",
-  "remarks": ""
+  "remarks": "string"
 }
 
 Sample GET /api/submissions response:
 [
   {
-    "id": 1,
-    "taskAssignmentId": 1,
+    "id": 2,
+    "taskAssignmentId": 2,
     "taskAssignment": {
-      "id": 1,
-      "traineeId": 1,
-      "mentorId": 1,
-      "learningTaskId": 1,
-      "submission": [
-        {
-          "id": 1,
-          "taskAssignmentId": 1,
-          "submissionUrl": "https://localhost:9000",
-          "notes": "Nothing",
-          "submittedDate": "2026-06-15T10:14:07.178",
-          "status": "Submitted",
-          "reviews": []
-        }
-      ],
-      "assignedDate": "2026-06-15T10:08:57.407",
-      "dueDate": "2026-06-15T10:08:57.407",
-      "status": "InProgress",
-      "remarks": ""
+      "id": 2,
+      "traineeName": null,
+      "mentorName": null,
+      "learningTaskTitle": null,
+      "dueDate": "2026-06-29T13:06:29.026",
+      "status": "Assigned"
     },
-    "reviews": [],
-    "submissionUrl": "https://localhost:9000",
-    "notes": "Nothing",
-    "submittedDate": "2026-06-15T10:14:07.178",
+    "submissionUrl": "http://github.com",
+    "notes": "Something",
+    "submittedDate": "2026-06-29T13:09:10.51",
     "status": "Submitted"
   }
 ]
@@ -654,45 +470,30 @@ Sample GET /api/submissions response:
 
 Sample GET /api/submissions/{1} response:
 {
-  "id": 1,
-  "taskAssignmentId": 1,
+  "id": 2,
+  "taskAssignmentId": 2,
   "taskAssignment": {
-    "id": 1,
-    "traineeId": 1,
-    "mentorId": 1,
-    "learningTaskId": 1,
-    "submission": [
-      {
-        "id": 1,
-        "taskAssignmentId": 1,
-        "submissionUrl": "https://localhost:9000",
-        "notes": "Nothing",
-        "submittedDate": "2026-06-15T10:14:07.178",
-        "status": "Submitted",
-        "reviews": []
-      }
-    ],
-    "assignedDate": "2026-06-15T10:08:57.407",
-    "dueDate": "2026-06-15T10:08:57.407",
-    "status": "InProgress",
-    "remarks": ""
+    "id": 2,
+    "traineeName": null,
+    "mentorName": null,
+    "learningTaskTitle": null,
+    "dueDate": "2026-06-29T13:06:29.026",
+    "status": "Assigned"
   },
-  "reviews": [],
-  "submissionUrl": "https://localhost:9000",
-  "notes": "Nothing",
-  "submittedDate": "2026-06-15T10:14:07.178",
+  "submissionUrl": "http://github.com",
+  "notes": "Something",
+  "submittedDate": "2026-06-29T13:09:10.51",
   "status": "Submitted"
 }
 
 Sample POST /api/submissions response: 
 {
-  "id": 1,
-  "taskAssignmentId": 1,
+  "id": 2,
+  "taskAssignmentId": 2,
   "taskAssignment": null,
-  "reviews": [],
-  "submissionUrl": "https://localhost:9000",
-  "notes": "Nothing",
-  "submittedDate": "2026-06-15T10:14:07.178Z",
+  "submissionUrl": "http://github.com",
+  "notes": "Something",
+  "submittedDate": "2026-06-29T13:09:10.51Z",
   "status": "Submitted"
 }
 
@@ -700,184 +501,67 @@ Sample GET /api/reviews response:
 [
   {
     "id": 1,
-    "submissionId": 1,
     "submission": {
-      "id": 1,
-      "taskAssignmentId": 1,
-      "submissionUrl": "https://localhost:9000",
-      "notes": "Nothing",
-      "submittedDate": "2026-06-15T10:14:07.178",
-      "status": "Submitted",
-      "reviews": [
-        {
-          "id": 1,
-          "submissionId": 1,
-          "mentorId": 1,
-          "feedback": "Good implementation",
-          "score": 9,
-          "reviewStatus": "Accepted",
-          "reviewedDate": "2026-06-15T10:16:43.838"
-        }
-      ]
+      "id": 2,
+      "status": "Submitted"
     },
-    "mentorId": 1,
     "mentor": {
       "id": 1,
       "firstName": "Om",
-      "lastName": "Deshmukh",
-      "email": "omdeshmukh@example.com",
-      "expertise": "Java Spring Boot",
-      "status": "Inactive",
-      "createdDate": "2026-06-15T09:59:11.51592",
-      "updatedDate": "2026-06-15T10:00:48.726323",
-      "taskAssignments": [
-        {
-          "id": 1,
-          "traineeId": 1,
-          "mentorId": 1,
-          "learningTaskId": 1,
-          "submission": [
-            {
-              "id": 1,
-              "taskAssignmentId": 1,
-              "submissionUrl": "https://localhost:9000",
-              "notes": "Nothing",
-              "submittedDate": "2026-06-15T10:14:07.178",
-              "status": "Submitted",
-              "reviews": [
-                {
-                  "id": 1,
-                  "submissionId": 1,
-                  "mentorId": 1,
-                  "feedback": "Good implementation",
-                  "score": 9,
-                  "reviewStatus": "Accepted",
-                  "reviewedDate": "2026-06-15T10:16:43.838"
-                }
-              ]
-            }
-          ],
-          "assignedDate": "2026-06-15T10:08:57.407",
-          "dueDate": "2026-06-15T10:08:57.407",
-          "status": "InProgress",
-          "remarks": ""
-        }
-      ],
-      "reviews": [
-        {
-          "id": 1,
-          "submissionId": 1,
-          "mentorId": 1,
-          "feedback": "Good implementation",
-          "score": 9,
-          "reviewStatus": "Accepted",
-          "reviewedDate": "2026-06-15T10:16:43.838"
-        }
-      ]
+      "lastName": "Deshmukh"
     },
-    "feedback": "Good implementation",
-    "score": 9,
+    "feedback": "Something",
+    "score": 10,
     "reviewStatus": "Accepted",
-    "reviewedDate": "2026-06-15T10:16:43.838"
+    "reviewedDate": "2026-06-29T13:37:02.337"
   }
 ]
 
 Sample GET /api/reviews/{1} response:
 {
   "id": 1,
-  "submissionId": 1,
   "submission": {
-    "id": 1,
-    "taskAssignmentId": 1,
-    "submissionUrl": "https://localhost:9000",
-    "notes": "Nothing",
-    "submittedDate": "2026-06-15T10:14:07.178",
-    "status": "Submitted",
-    "reviews": [
-      {
-        "id": 1,
-        "submissionId": 1,
-        "mentorId": 1,
-        "feedback": "Good implementation",
-        "score": 9,
-        "reviewStatus": "Accepted",
-        "reviewedDate": "2026-06-15T10:16:43.838"
-      }
-    ]
+    "id": 2,
+    "status": "Submitted"
   },
-  "mentorId": 1,
   "mentor": {
     "id": 1,
     "firstName": "Om",
-    "lastName": "Deshmukh",
-    "email": "omdeshmukh@example.com",
-    "expertise": "Java Spring Boot",
-    "status": "Inactive",
-    "createdDate": "2026-06-15T09:59:11.51592",
-    "updatedDate": "2026-06-15T10:00:48.726323",
-    "taskAssignments": [
-      {
-        "id": 1,
-        "traineeId": 1,
-        "mentorId": 1,
-        "learningTaskId": 1,
-        "submission": [
-          {
-            "id": 1,
-            "taskAssignmentId": 1,
-            "submissionUrl": "https://localhost:9000",
-            "notes": "Nothing",
-            "submittedDate": "2026-06-15T10:14:07.178",
-            "status": "Submitted",
-            "reviews": [
-              {
-                "id": 1,
-                "submissionId": 1,
-                "mentorId": 1,
-                "feedback": "Good implementation",
-                "score": 9,
-                "reviewStatus": "Accepted",
-                "reviewedDate": "2026-06-15T10:16:43.838"
-              }
-            ]
-          }
-        ],
-        "assignedDate": "2026-06-15T10:08:57.407",
-        "dueDate": "2026-06-15T10:08:57.407",
-        "status": "InProgress",
-        "remarks": ""
-      }
-    ],
-    "reviews": [
-      {
-        "id": 1,
-        "submissionId": 1,
-        "mentorId": 1,
-        "feedback": "Good implementation",
-        "score": 9,
-        "reviewStatus": "Accepted",
-        "reviewedDate": "2026-06-15T10:16:43.838"
-      }
-    ]
+    "lastName": "Deshmukh"
   },
-  "feedback": "Good implementation",
-  "score": 9,
+  "feedback": "Something",
+  "score": 10,
   "reviewStatus": "Accepted",
-  "reviewedDate": "2026-06-15T10:16:43.838"
+  "reviewedDate": "2026-06-29T13:37:02.337"
 }
 
 Sample POST /api/reviews response:
 {
   "id": 1,
-  "submissionId": 1,
   "submission": null,
-  "mentorId": 1,
   "mentor": null,
-  "feedback": "Good implementation",
-  "score": 9,
+  "feedback": "Something",
+  "score": 10,
   "reviewStatus": "Accepted",
-  "reviewedDate": "2026-06-15T10:16:43.838Z"
+  "reviewedDate": "2026-06-29T13:37:02.337Z"
 }
+
+Sample POST /api/submission/{id}/files response:
+{
+  "id": 1,
+  "originalFileName": "Day_01.txt",
+  "contentType": "text/plain",
+  "correlationId": "17fc5349-4a22-40ab-bdd4-42333c827b27",
+  "size": 222,
+  "ownerName": "Piyush",
+  "submissionId": 2,
+  "createdAt": "2026-06-29T13:38:46.0811208Z"
+}
+
+## Docker compose start-up
+- Run the following command
+
+docker compose up -d 
 
 
 ## Known Limitations

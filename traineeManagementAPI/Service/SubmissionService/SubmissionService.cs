@@ -51,16 +51,16 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
 
     public async Task<SubmissionDetailDTO> CreateAsync(CreateSubmissionRequestDTO createSubmissionDto)
     {
-        // Submission newSubmission = new()
-        // {
-        //     TaskAssignmentId = createSubmissionDto.TaskAssignmentId,
-        //     SubmissionUrl = createSubmissionDto.SubmissionUrl,
-        //     Notes = createSubmissionDto.Notes,
-        //     SubmittedDate = createSubmissionDto.SubmittedDate,
-        //     Status = createSubmissionDto.Status
-        // };
+        Submission newSubmission = new()
+        {
+            TaskAssignmentId = createSubmissionDto.TaskAssignmentId,
+            SubmissionUrl = createSubmissionDto.SubmissionUrl,
+            Notes = createSubmissionDto.Notes,
+            SubmittedDate = createSubmissionDto.SubmittedDate,
+            Status = createSubmissionDto.Status
+        };
 
-        Submission newSubmission = _mapper.Map<Submission>(createSubmissionDto);
+        // Submission newSubmission = _mapper.Map<Submission>(createSubmissionDto);
 
         Submission CreatedSubmission = await _repo.CreateSubmissionAsync(newSubmission);
 
