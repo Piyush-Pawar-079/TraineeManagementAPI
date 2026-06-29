@@ -92,12 +92,13 @@ builder.Services.AddHealthChecks()
       timeout: TimeSpan.FromSeconds(5),
       tags: new[] { "mq", "rabbit" }
     )
-    .AddUrlGroup(
-        uri: new Uri("http://localhost:5190/api/trainees"), // URL to check
-        name: "TraineeDirectory.Api",
-        failureStatus: HealthStatus.Unhealthy,
-        timeout: TimeSpan.FromSeconds(5)
-    );
+   //  .AddUrlGroup(
+   //      uri: new Uri(Environment.GetEnvironmentVariable("Training_Directory_API_Base_URL")! + "/health/ready"), // URL to check
+   //      name: "TraineeDirectory.Api",
+   //      failureStatus: HealthStatus.Unhealthy,
+   //      timeout: TimeSpan.FromSeconds(10)
+   //  )
+    ;
 
 var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
  
@@ -227,6 +228,8 @@ app.MapControllers();
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<CorrelationIdMiddleware>();
 
+app.MapHealthChecks("/health");
+
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
    Predicate = _ => true, // Include all health checks
@@ -250,8 +253,16 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
  
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
-   Predicate = _ => true
+   Predicate = _ => false
 });
+
+
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+//     db.Database.Migrate();
+// }
+
 
 app.MapGet("/", () =>
 {

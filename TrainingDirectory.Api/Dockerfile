@@ -31,6 +31,10 @@ RUN dotnet publish -c Release -o out --no-restore
  
 FROM docker-registry-002.zeuslearning.com/zeuslearning/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /App
+
+RUN apk add --no-cache curl
+
 COPY --from=build-env /AppCode/TrainingDirectory.Api/out .
 EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["dotnet", "TrainingDirectory.Api.dll"]

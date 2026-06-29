@@ -35,18 +35,17 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
         string HashedPassword = new PasswordHasher<CreateUserRequestDTO>()
         .HashPassword(createUserRequestDTO, createUserRequestDTO.Password);
 
-        // var newUser = new User
-        // {
-        //     Id = _nextId++,
-        //     Username = createUserRequestDTO.Username,
-        //     PasswordHash = HashedPassword,
-        //     Email = createUserRequestDTO.Email,
-        //     Role = createUserRequestDTO.Role,
-        //     CreatedDate = DateTime.UtcNow,
-        //     UpdatedDate = DateTime.UtcNow
-        // };
+        var newUser = new User
+        {
+            Username = createUserRequestDTO.Username,
+            PasswordHash = HashedPassword,
+            Email = createUserRequestDTO.Email,
+            Role = createUserRequestDTO.Role,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
+        };
 
-        var newUser = _mapper.Map<User>(createUserRequestDTO);
+        // var newUser = _mapper.Map<User>(createUserRequestDTO);
 
         var createdUser = await _repository.CreateAsync(newUser);
         

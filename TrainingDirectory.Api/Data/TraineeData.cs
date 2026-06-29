@@ -3,8 +3,8 @@ using TrainingDirectory.Api.Model;
 namespace TrainingDirectory.Api.Data;
 public static class DummyTraineeData
 {
-    public static List<TraineeProfile> Trainees = new List<TraineeProfile>
-    {
+    public static List<TraineeProfile> Trainees =
+    [
         new TraineeProfile
         {
             Id = 1,
@@ -25,5 +25,5 @@ public static class DummyTraineeData
             JoinedOn = DateTime.UtcNow.AddMonths(-4),
             CompletedAssignments = 10
         }
-    };
+    ];
 }

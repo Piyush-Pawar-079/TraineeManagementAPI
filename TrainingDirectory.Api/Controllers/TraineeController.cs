@@ -42,6 +42,7 @@ namespace TrainingDirectory.Api.Controllers
         [HttpGet]
         public ActionResult<List<TraineeProfileResponseDto>> GetTrainees()
         {
+            _logger.LogInformation("Inside the get all method.");
             var correlationId = HttpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault();
 
             var response = DummyTraineeData.Trainees.Select(t => new TraineeProfileResponseDto
