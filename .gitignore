@@ -1,12 +1,4 @@
-traineeManagementAPI/bin/
-traineeManagementAPI/obj/
-
 CommonLibrary/.env
-CommonLibrary/bin/
-CommonLibrary/obj/
-
-SubmissionProcessor.Worker/bin/
-SubmissionProcessor.Worker/obj/
-
-TrainingDirectory.Api/obj/
-TrainingDirectory.Api/bin/
+*.env
+**/bin/
+**/obj/
