@@ -9,7 +9,7 @@ using CommonLibrary.Data;
 
 #nullable disable
 
-namespace traineeManagementAPI.Migrations
+namespace TraineeManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
     [Migration("20260619061709_AddSubmissionFilesModel")]
@@ -25,7 +25,7 @@ namespace traineeManagementAPI.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("traineeManagementAPI.Model.LearningTask", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.LearningTask", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("LearningTasks");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Mentor", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Mentor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -100,7 +100,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("Mentors");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Review", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Review", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -136,7 +136,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Submission", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Submission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -168,7 +168,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("Submissions");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.SubmissionFile", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.SubmissionFile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -214,7 +214,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("SubmissionFiles");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.TaskAssignment", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.TaskAssignment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -254,7 +254,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("TaskAssignments");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Trainee", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Trainee", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -292,7 +292,7 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("Trainees");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.User", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -329,15 +329,15 @@ namespace traineeManagementAPI.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Review", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Review", b =>
                 {
-                    b.HasOne("traineeManagementAPI.Model.Mentor", "Mentor")
+                    b.HasOne("TraineeManagement.Api.Model.Mentor", "Mentor")
                         .WithMany("Reviews")
                         .HasForeignKey("MentorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("traineeManagementAPI.Model.Submission", "Submission")
+                    b.HasOne("TraineeManagement.Api.Model.Submission", "Submission")
                         .WithMany("Reviews")
                         .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -348,9 +348,9 @@ namespace traineeManagementAPI.Migrations
                     b.Navigation("Submission");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Submission", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Submission", b =>
                 {
-                    b.HasOne("traineeManagementAPI.Model.TaskAssignment", "TaskAssignment")
+                    b.HasOne("TraineeManagement.Api.Model.TaskAssignment", "TaskAssignment")
                         .WithMany("Submission")
                         .HasForeignKey("TaskAssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -359,9 +359,9 @@ namespace traineeManagementAPI.Migrations
                     b.Navigation("TaskAssignment");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.SubmissionFile", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.SubmissionFile", b =>
                 {
-                    b.HasOne("traineeManagementAPI.Model.Submission", "Submission")
+                    b.HasOne("TraineeManagement.Api.Model.Submission", "Submission")
                         .WithMany("SubmissionFiles")
                         .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -370,21 +370,21 @@ namespace traineeManagementAPI.Migrations
                     b.Navigation("Submission");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.TaskAssignment", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.TaskAssignment", b =>
                 {
-                    b.HasOne("traineeManagementAPI.Model.LearningTask", "LearningTask")
+                    b.HasOne("TraineeManagement.Api.Model.LearningTask", "LearningTask")
                         .WithMany("TaskAssignments")
                         .HasForeignKey("LearningTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("traineeManagementAPI.Model.Mentor", "Mentor")
+                    b.HasOne("TraineeManagement.Api.Model.Mentor", "Mentor")
                         .WithMany("TaskAssignments")
                         .HasForeignKey("MentorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("traineeManagementAPI.Model.Trainee", "Trainee")
+                    b.HasOne("TraineeManagement.Api.Model.Trainee", "Trainee")
                         .WithMany("TaskAssignments")
                         .HasForeignKey("TraineeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -397,31 +397,31 @@ namespace traineeManagementAPI.Migrations
                     b.Navigation("Trainee");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.LearningTask", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.LearningTask", b =>
                 {
                     b.Navigation("TaskAssignments");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Mentor", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Mentor", b =>
                 {
                     b.Navigation("Reviews");
 
                     b.Navigation("TaskAssignments");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Submission", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Submission", b =>
                 {
                     b.Navigation("Reviews");
 
                     b.Navigation("SubmissionFiles");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.TaskAssignment", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.TaskAssignment", b =>
                 {
                     b.Navigation("Submission");
                 });
 
-            modelBuilder.Entity("traineeManagementAPI.Model.Trainee", b =>
+            modelBuilder.Entity("TraineeManagement.Api.Model.Trainee", b =>
                 {
                     b.Navigation("TaskAssignments");
                 });

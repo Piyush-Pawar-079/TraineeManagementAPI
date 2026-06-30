@@ -14,10 +14,10 @@ services:
       - "15672:15672"
     env_file:
       - "./CommonLibrary/.env"
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RabbitMQ_UserName}
-      - RABBITMQ_DEFAULT_PASS= ${RabbitMQ_Password}
-      - RABBITMQ_DEFAULT_VHOST= ${RabbitMQ_VHost}
+    # environment:
+    #   - RABBITMQ_DEFAULT_USER=${RabbitMQ_UserName}
+    #   - RABBITMQ_DEFAULT_PASS= ${RabbitMQ_Password}
+    #   - RABBITMQ_DEFAULT_VHOST= ${RabbitMQ_VHost}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -34,9 +34,9 @@ services:
       - "3307:3306"
     env_file:
       - "./CommonLibrary/.env"
-    environment:
-      - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE= ${MYSQL_DATABASE}
+    # environment:
+    #   - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}
+    #   - MYSQL_DATABASE= ${MYSQL_DATABASE}
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 10s
@@ -49,7 +49,7 @@ services:
   api:
     build:
         context: .
-        dockerfile: ./traineeManagementAPI/Dockerfile
+        dockerfile: ./TraineeManagement.Api/Dockerfile
         args:
           DOMAIN_OWNER: ${DOMAIN_OWNER}
           NUGET_REPO_NAME: ${NUGET_REPO_NAME}

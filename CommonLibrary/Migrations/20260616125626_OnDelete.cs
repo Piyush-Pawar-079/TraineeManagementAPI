@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace traineeManagementAPI.Migrations
+namespace TraineeManagement.Api.Migrations
 {
     /// <inheritdoc />
     public partial class OnDelete : Migration

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace traineeManagementAPI.Migrations
+namespace TraineeManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
     [Migration("20260625065934_ProcessingJobId")]

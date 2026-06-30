@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace traineeManagementAPI.Migrations
+namespace TraineeManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
     partial class ApplicationDBContextModelSnapshot : ModelSnapshot

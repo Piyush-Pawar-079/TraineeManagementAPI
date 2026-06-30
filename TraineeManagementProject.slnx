@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="CommonLibrary/CommonLibrary.csproj" />
   <Project Path="SubmissionProcessor.Worker/SubmissionProcessor.Worker.csproj" />
-  <Project Path="traineeManagementAPI/traineeManagementAPI.csproj" />
+  <Project Path="TraineeManagement.Api/TraineeManagement.Api.csproj" />
   <Project Path="TrainingDirectory.Api/TrainingDirectory.Api.csproj" />
 </Solution>
