@@ -9,7 +9,7 @@ using System.Net;
 var builder = Host.CreateApplicationBuilder(args);
 Env.Load("../CommonLibrary/.env");
 
-builder.Services.AddHostedService<SubmissionProcessorWorker>();
+builder.Services.AddHostedService<SubmissionConsumerWorker>();
 
 builder.Services.AddHttpClient<HttpDirectoryClient>("TrainingDirectory.Api", client =>
    {

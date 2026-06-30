@@ -12,12 +12,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    env_file:
-      - "./CommonLibrary/.env"
-    # environment:
-    #   - RABBITMQ_DEFAULT_USER=${RabbitMQ_UserName}
-    #   - RABBITMQ_DEFAULT_PASS= ${RabbitMQ_Password}
-    #   - RABBITMQ_DEFAULT_VHOST= ${RabbitMQ_VHost}
+    environment:
+      RABBITMQ_DEFAULT_USER: Admin
+      RABBITMQ_DEFAULT_PASS: admin@12345
+      RABBITMQ_DEFAULT_VHOST: trainee_management_vhost
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -32,11 +30,9 @@ services:
     container_name: mysql
     ports:
       - "3307:3306"
-    env_file:
-      - "./CommonLibrary/.env"
-    # environment:
-    #   - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}
-    #   - MYSQL_DATABASE= ${MYSQL_DATABASE}
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: trainee_management_db
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 10s
@@ -57,8 +53,8 @@ services:
           REGION: ${REGION}
     # image: traineemanagementsystem-api:latest
     container_name: trainee-management-api-container
-    # environment:
-    #   - ASPNETCORE_URLS=http://0.0.0.0:8080
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
     env_file:
       - ./CommonLibrary/.env
     ports:
@@ -88,8 +84,8 @@ services:
         REGION: ${REGION}
     # image: traineemanagementsystem-training_directory_api:latest
     container_name: training-directory-api-container
-    # environment:
-    #   - ASPNETCORE_URLS=http://0.0.0.0:8080
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
     ports:
       - "8081:8080"
     depends_on:

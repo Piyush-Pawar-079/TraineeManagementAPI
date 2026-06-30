@@ -14,4 +14,10 @@ public class ProcessingJobsController(IProcessingJobService jobService) : Contro
     {
         return Ok(await _jobService.GetProcessingJobById(id));
     }
+
+    [HttpPost("{id}/retry")]
+    public async Task<IActionResult> RetryJob(int id)
+    {
+        return Ok(await _jobService.RetryJobAsync(id));
+    }
 }

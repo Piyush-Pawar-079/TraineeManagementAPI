@@ -29,8 +29,6 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
     {
         base.OnModelCreating(modelBuilder);
 
-        // 
-
         modelBuilder.Entity<TaskAssignment>()
             .HasOne(ta => ta.Trainee)          // Each TaskAssignment has one Trainee
             .WithMany(t => t.TaskAssignments)        // Each Trainee has many TaskAssignments
@@ -71,7 +69,5 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
             
         modelBuilder.Entity<ProcessingJob>()
             .HasIndex(j => j.FileId);
-        
     }
-
 }

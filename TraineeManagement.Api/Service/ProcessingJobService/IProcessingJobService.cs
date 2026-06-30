@@ -8,4 +8,6 @@ public interface IProcessingJobService
     Task<ProcessingJobResponseDTO> GetProcessingJobById(int id);
 
     Task AddProcessingJob(ProcessingJob job);
+
+    Task<ProcessingJobResponseDTO?> RetryJobAsync(int id);
 }
