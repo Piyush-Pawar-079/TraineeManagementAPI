@@ -27,7 +27,9 @@ public class ReviewController(IReviewService ReviewService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult> CreateReview(CreateReviewRequestDTO createReviewDTO)
     {
-        return Ok(await _ReviewService.CreateAsync(createReviewDTO));
+        // return Ok(await _ReviewService.CreateAsync(createReviewDTO));
+        var Review = await _ReviewService.CreateAsync(createReviewDTO);
+        return CreatedAtAction(nameof(GetById), new { id = Review.Id }, Review);
     }
 
 }

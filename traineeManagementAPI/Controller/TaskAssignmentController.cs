@@ -34,7 +34,9 @@ public class TaskAssignmentController(ITaskAssignmentService TaskAssignmentServi
     [HttpPost]
     public async Task<ActionResult<TaskAssignmentDetailDTO>> CreateTaskAssignment(CreateTaskAssignmentRequestDTO createDto)
     {
-        return Ok(await _taskAssignmentService.CreateAsync(createDto));
+        // return Ok(await _taskAssignmentService.CreateAsync(createDto));
+        var TaskAssignment = await _taskAssignmentService.CreateAsync(createDto);
+        return CreatedAtAction(nameof(GetTaskAssignmentById), new { id = TaskAssignment.Id }, TaskAssignment);
     }
 
 }

@@ -1,11 +1,9 @@
 using AutoMapper;
-using Azure.Core;
 using traineeManagementAPI.DTO.MentorDTOs;
 using traineeManagementAPI.Exceptions;
 using CommonLibrary.Models;
 using traineeManagementAPI.Repositories.MentorRepository;
 using traineeManagementAPI.Service.CorrelationIdService;
-using traineeManagementAPI.DTO.AuthDTOs;
 
 namespace traineeManagementAPI.Service.MentorService;
 

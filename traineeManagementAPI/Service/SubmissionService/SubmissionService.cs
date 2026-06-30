@@ -45,7 +45,7 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
 
         await _cache.SetAsync(key, _mapper.Map<SubmissionDetailDTO>(dbSubmission));
 
-        return _mapper.Map<SubmissionDetailDTO>(Submission);
+        return _mapper.Map<SubmissionDetailDTO>(dbSubmission);
 
     }
 

@@ -1,4 +1,3 @@
-using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using CommonLibrary.Models;
 
 namespace traineeManagementAPI.DTO.TraineeDTOs;

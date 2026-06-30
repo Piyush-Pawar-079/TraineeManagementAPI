@@ -1,5 +1,4 @@
 using CommonLibrary.Models;
-using traineeManagementAPI.DTO.ProcessingJobDTOs;
 
 namespace traineeManagementAPI.Repositories.ProcessingJobRepository;
 

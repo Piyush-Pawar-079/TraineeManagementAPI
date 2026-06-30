@@ -1,7 +1,6 @@
 using CommonLibrary.Data;
 using CommonLibrary.Models;
 using Microsoft.EntityFrameworkCore;
-using traineeManagementAPI.DTO.ProcessingJobDTOs;
 
 namespace traineeManagementAPI.Repositories.ProcessingJobRepository;
 

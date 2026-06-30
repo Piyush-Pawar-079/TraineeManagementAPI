@@ -1,18 +1,8 @@
-using System.Collections.Generic;
- 
 namespace traineeManagementAPI.Helpers;
-public class PagedResponse<T>
+public class PagedResponse<T>(List<T> data, int pageNumber, int pageSize, int totalRecords)
 {
-    public List<T> Data { get; set; }
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
-    public int TotalRecords { get; set; }
-
-    public PagedResponse(List<T> data, int pageNumber, int pageSize, int totalRecords)
-    {
-        Data = data;
-        PageNumber = pageNumber;
-        PageSize = pageSize;
-        TotalRecords = totalRecords;
-    }
+    public List<T> Data { get; set; } = data;
+    public int PageNumber { get; set; } = pageNumber;
+    public int PageSize { get; set; } = pageSize;
+    public int TotalRecords { get; set; } = totalRecords;
 }

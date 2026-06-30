@@ -124,7 +124,7 @@ public class LocalFileStorageService: IFileStorageService
     {
 
         var file = await _repo.GetSubmissionFileById(id);
-
+        // Console.Write("THis is the file: " + file.Id);
         if (file == null)
         {
             _logger.LogError($"File with the specified id - {id} not found. CorrelationId: {correlationId}");

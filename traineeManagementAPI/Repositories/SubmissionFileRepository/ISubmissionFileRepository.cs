@@ -1,4 +1,3 @@
-using traineeManagementAPI.DTO.SubmissionFileDTOs;
 using CommonLibrary.Models;
 
 namespace traineeManagementAPI.Repositories.SubmissionFileRepository;

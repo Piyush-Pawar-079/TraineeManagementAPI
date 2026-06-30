@@ -36,7 +36,8 @@ public class TraineeController(ITraineeService traineeService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TraineeDetailDTO>> CreateTrainee(CreateTraineeRequestDTO createDto)
     {
-        return Ok(await _traineeService.CreateTrainee(createDto));
+        var trainee = await _traineeService.CreateTrainee(createDto);
+        return CreatedAtAction(nameof(GetTraineeById), new { id = trainee.Id }, trainee);
     }
 
 
@@ -44,8 +45,7 @@ public class TraineeController(ITraineeService traineeService) : ControllerBase
     public async Task<IActionResult> DeleteTrainee(int id)
     {
         await _traineeService.DeleteTrainee(id);
-        return Ok();
-
+        return NoContent();
     }
 
 }

@@ -4,7 +4,6 @@ using traineeManagementAPI.Helpers;
 using CommonLibrary.Models;
 using traineeManagementAPI.DTO.HelperDTOs;
 using traineeManagementAPI.Exceptions;
-using traineeManagementAPI.DTO.TaskAssignmentDTOs;
 using AutoMapper;
 using traineeManagementAPI.Service.RedisService;
 using traineeManagementAPI.Service.CorrelationIdService;
@@ -16,11 +15,11 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     private class SortFields
     {
-        public const String FirstName = "Firstname";
-        public const String LastName = "Lastname";
-        public const String Email = "Email";
-        public const String TechStack = "TechStack";
-        public const String Status = "Status";
+        public const string FirstName = "Firstname";
+        public const string LastName = "Lastname";
+        public const string Email = "Email";
+        public const string TechStack = "TechStack";
+        public const string Status = "Status";
     }
 
     private readonly ITraineeRepository _repository = repository;
@@ -42,7 +41,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         var key = $"Trainee:{id}";
         var trainee = await _cache.GetAsync<TraineeDetailDTO>(key);
-
+        Console.WriteLine(trainee + "This is the trainee from the redis cache");
         if (trainee != null)
         {
             _logger.LogInformation("Trainee with the specified Id found in redis cache. Cache hit case. CorrelationId: {CorrelationId}", correlationId);
@@ -61,7 +60,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         await _cache.SetAsync(key, _mapper.Map<TraineeDetailDTO>(dbTrainee));
 
-        return _mapper.Map<TraineeDetailDTO>(trainee);
+        return _mapper.Map<TraineeDetailDTO>(dbTrainee);
 
     }
 
@@ -111,8 +110,6 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<TraineeDetailDTO> CreateTrainee(CreateTraineeRequestDTO trainee)
     {
-        Console.WriteLine(trainee.Status);
-        Console.WriteLine(trainee.Status.GetType());
         // var newTrainee = new Trainee
         // {
         //     FirstName = trainee.FirstName,

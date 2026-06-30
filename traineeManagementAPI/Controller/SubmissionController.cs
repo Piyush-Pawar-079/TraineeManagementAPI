@@ -30,13 +30,17 @@ public class SubmissionController(ISubmissionService submissionService, IFileSto
     [HttpPost]
     public async Task<ActionResult> CreateSubmission(CreateSubmissionRequestDTO createSubmissionDTO)
     {
-        return Ok(await _submissionService.CreateAsync(createSubmissionDTO));
+        // return Ok(await _submissionService.CreateAsync(createSubmissionDTO));
+        var Submission = await _submissionService.CreateAsync(createSubmissionDTO);
+        return CreatedAtAction(nameof(GetById), new { id = Submission.Id }, Submission);
     }
 
     [DisableRequestSizeLimit]
     [HttpPost("{submissionId}/files")]
     public async Task<ActionResult> UploadSubmissionFile(int submissionId, CreateSubmissionFileDTO createDTO, CancellationToken cancellationToken)
     {
-        return Ok(await _fileStorageService.SaveAsync(submissionId, createDTO, cancellationToken));
+        // return Ok(await _fileStorageService.SaveAsync(submissionId, createDTO, cancellationToken));
+        await _fileStorageService.SaveAsync(submissionId, createDTO, cancellationToken);
+        return Accepted();
     }
 }

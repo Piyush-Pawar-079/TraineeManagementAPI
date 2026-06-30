@@ -15,7 +15,7 @@ public class LearningTaskController(ILearningTaskService LearningTaskService) : 
     [HttpGet]
     public async Task<ActionResult<List<LearningTaskDetailDTO>>> GetAllLearningTasks()
     {
-        return await _LearningTaskService.GetAllAsync();
+        return Ok(await _LearningTaskService.GetAllAsync());
     }
 
     [HttpGet("{id}")]
@@ -33,7 +33,9 @@ public class LearningTaskController(ILearningTaskService LearningTaskService) : 
     [HttpPost]
     public async Task<ActionResult<LearningTaskDetailDTO>> CreateLearningTask(CreateLearningTaskRequestDTO createDto)
     {
-        return Ok(await _LearningTaskService.CreateAsync(createDto));
+        // return Ok(await _LearningTaskService.CreateAsync(createDto));
+        var LearningTask = await _LearningTaskService.CreateAsync(createDto);
+        return CreatedAtAction(nameof(GetLearningTaskById), new { id = LearningTask.Id }, LearningTask);
     }
 
 
@@ -41,7 +43,7 @@ public class LearningTaskController(ILearningTaskService LearningTaskService) : 
     public async Task<IActionResult> DeleteLearningTask(int id)
     {
         await _LearningTaskService.DeleteAsync(id);
-        return Ok();
+        return NoContent();
     }
 
 }

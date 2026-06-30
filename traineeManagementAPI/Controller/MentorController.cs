@@ -33,14 +33,16 @@ public class MentorController(IMentorService mentorService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MentorDetailDTO>> CreateMentor(CreateMentorRequestDTO createDto)
     {
-        return Ok(await _mentorService.CreateAsync(createDto));
+        // return Ok(await _mentorService.CreateAsync(createDto));
+        var Mentor = await _mentorService.CreateAsync(createDto);
+        return CreatedAtAction(nameof(GetMentorById), new {id = Mentor.Id }, Mentor);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMentor(int id)
     {
         await _mentorService.DeleteAsync(id);
-        return Ok();
+        return NoContent();
     }
 
 }
