@@ -7,6 +7,11 @@ Trainee Management API
 ## How to Run
 run `dotnet run` in the root of the project directory  
 
+## WorkFlow diagram of the Application
+
+<img width="1693" height="743" alt="WorkFlow_Diagram" src="https://github.com/user-attachments/assets/b6e3602e-ff01-42fd-9296-5edf8953cea1" />
+
+
 ## Database Setup Steps
 
 - First import required packages and make sure all the packages are of the same version so that we do not get any version mismatch error.
