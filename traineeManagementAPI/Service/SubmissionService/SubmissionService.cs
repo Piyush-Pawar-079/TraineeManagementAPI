@@ -22,6 +22,12 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
         return _mapper.Map<List<SubmissionDetailDTO>>(allSubmissions);
     }
 
+    public async Task<SubmissionBasicDTO> GetSummary(int id)
+    {
+        var submission = await _repo.GetSubmissionByIdAsync(id);
+        return _mapper.Map<SubmissionBasicDTO>(submission);
+    }
+
     public async Task<SubmissionDetailDTO?> GetByIdAsync(int id)
     {
         var key = $"Submission:{id}";

@@ -115,7 +115,7 @@ public class LocalFileStorageService: IFileStorageService
         else
             _logger.LogInformation("Message added to the processing queue. CorrelationId: {CorrelationId}", correlationId);
 
-        var newResult =  _mapper.Map<SubmissionFileResponseDTO>(result);
+        var newResult =  _mapper.Map<SubmissionFileResponseDTO>(result); 
         newResult.CorrelationId = correlationId;
         return newResult;
     }

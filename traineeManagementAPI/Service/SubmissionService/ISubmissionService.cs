@@ -8,5 +8,7 @@ public interface ISubmissionService
 
     Task<SubmissionDetailDTO?> GetByIdAsync(int id);
 
+    Task<SubmissionBasicDTO> GetSummary(int id);
+
     Task<SubmissionDetailDTO> CreateAsync(CreateSubmissionRequestDTO createSubmissionDto);
 }

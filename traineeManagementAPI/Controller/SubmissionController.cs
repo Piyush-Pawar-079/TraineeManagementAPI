@@ -27,6 +27,12 @@ public class SubmissionController(ISubmissionService submissionService, IFileSto
         return Ok(await _submissionService.GetByIdAsync(id));
     }
 
+    [HttpGet("{id}/summary")]
+    public async Task<ActionResult> GetSubmissionSummary(int id)
+    {
+        return Ok(await _submissionService.GetSummary(id));
+    }
+
     [HttpPost]
     public async Task<ActionResult> CreateSubmission(CreateSubmissionRequestDTO createSubmissionDTO)
     {

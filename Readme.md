@@ -28,14 +28,132 @@ run `dotnet run` in the root of the project directory
 dotnet ef migrations add "MigrationName"
 dotnet ef database update 
 
-## Login Credentials for testing
+## Backend setup steps
 
-username = "Admin"
-password = "admin@12345"
+  ### TraineeManagement.Api
+  1. Navigate to the TraineeManagement.Api folder  
+    From the root of the project run:  
+      ```javascript
+        cd TraineeManagement.Api
+      ```
+
+  2. Set up .env files  
+    Run the following command and enter appropriate values for all the environment variables  
+      ```javascript
+        cp .env.example .env 
+      ```
+
+  3. Restore dependencies  
+      ```javascript
+        dotnet restore
+      ``` 
+
+  4. Build the project   
+      ```javascript
+        dotnet build
+      ```
+
+  6. Run the application  
+      ```javascript
+        dotnet run
+      ```
 
 
-### JWT Usage Instructions
-- In the appsettings.json change the Key, Issuer and Audience values to change the JWT settings.
+
+  ### SubmissionProcessor.Worker
+  1. Navigate to the SubmissionProcessor.Worker folder    
+    From the root of the project run:   
+      ```javascript 
+        cd SubmissionProcessor.Worker
+      ```
+
+  2. Set up .env files    
+    Run the following command and enter appropriate values for all the environment variables  
+      ```javascript 
+        cp .env.example .env 
+      ```
+
+  3. Restore dependencies  
+      ```javascript 
+        dotnet restore
+      ```
+
+  4. Build the project   
+      ```javascript 
+        dotnet build
+      ```
+
+  5. Run the application  
+      ```javascript 
+        dotnet run
+      ```
+
+## MySQL setup steps
+1. Get a database connection string
+
+2. Add Database connection string in the .env file present in CommonLibrary  
+  ```javascript 
+    ConnectionStrings__DefaultConnection=Your-Database-Connection-String
+  ```
+
+3. Run the following command in the root of the project dir to make sure there are no errors.  
+  ```javascript 
+    dotnet build 
+  ```
+
+4. Run the following command in the root of the project dir to create tables in the database   
+  ```javascript 
+    dotnet ef database update -p Shared -s TraineeManagement.Api
+  ```
+
+Once ran successfully, the API and the database are in sync. We can test the connection by using swagger UI, try adding one entry   using POST end point and see if it is shown in the datase or not.
+
+## Redis setup steps
+1. Get a redis connection string and ensure your redis instance is up and running
+
+2. Add Redis connection string in the .env file Present in CommonLibrary.
+  ``` javascript 
+    RedisConnectionString="Your-Redis-Connection-String"
+  ```  
+
+## RabbitMQ setup steps
+1. Ensure a rabbitMQ instance is up and running
+
+2. Add RabbitMQ username in the .env file Present in CommonLibrary.
+  ``` javascript 
+    RabbitMQ_UserName="Your_Username" 
+  ```
+
+3. Add RabbitMQ password in the .env file Present in CommonLibrary.
+  ``` javascript 
+    RabbitMQ_Password="your_password" 
+  ```
+
+
+## Login credentials for testing
+``` javascript
+{
+  "username": "Admin",
+  "password": "admin@12345"
+}
+```
+
+## JWT usage instructions
+1. Generate and use a random string as your Jwt Key
+
+2. Add Jwt Key to .env file in the TraineeManagement.Api folder  
+  ``` javascript
+    Key="Your-Jwt-Key"
+  ```
+
+## Setup using Docker
+1. Ensure the .env file is appropriately filled
+
+2. Run the following command in the root of the project directory to start the application using docker:  
+  ``` javascript
+    docker compose up --build -d
+  ```
+
 
 
 ## API List
