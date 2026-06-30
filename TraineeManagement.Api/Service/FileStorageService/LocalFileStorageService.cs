@@ -20,7 +20,7 @@ public class LocalFileStorageService : IFileStorageService
     private readonly IMapper _mapper;
     private readonly string correlationId;
     private readonly RabbitMqSubmissionPublisher _publisher;
-    private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt", ".zip"];
+    private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt"];
 
     public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IProcessingJobService jobService, ICorrelationIdAccessor correlationIdAccessor)
     {
