@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TraineeManagement.Api.Service.ProcessingJobService;
 
 namespace TraineeManagement.Api.Controller;
 
+[Authorize]
 [ApiController]
 [Route("api/processing-jobs")]
 public class ProcessingJobsController(IProcessingJobService jobService) : ControllerBase

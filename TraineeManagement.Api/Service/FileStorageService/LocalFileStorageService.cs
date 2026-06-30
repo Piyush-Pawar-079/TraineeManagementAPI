@@ -45,11 +45,11 @@ public class LocalFileStorageService : IFileStorageService
             _logger.LogError("File upload failed. CorrelationId: {CorrelationId}", correlationId);
             throw new ArgumentException("No file selected to upload");
         }
-        // if (createDTO.File.Length > 5 * 1024 * 1024)
-        // {
-        //     _logger.LogError("File upload failed, file is too large");
-        //     throw new BadRequestException("File too large. Max 5 MB allowed.");
-        // }
+        if (createDTO.File.Length > 5 * 1024 * 1024)
+        {
+            _logger.LogError("File upload failed, file is too large");
+            throw new BadRequestException("File too large. Max 5 MB allowed.");
+        }
 
         var extention = Path.GetExtension(createDTO.File.FileName).ToLowerInvariant();
 
