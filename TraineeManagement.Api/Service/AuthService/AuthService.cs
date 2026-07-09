@@ -57,7 +57,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
     {
         var usersList = await _repository.GetAllAsync();
 
-        var found = usersList.FirstOrDefault(u => u.Username == loginDTO.Username);
+        User? found = usersList.FirstOrDefault(u => u.Username == loginDTO.Username);
 
         if (found == null)
         {
@@ -83,7 +83,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
             throw new BadRequestException("Password Incorrect");
         }
 
-        string token = GenerateToken(userRequestDTO);
+        string token = GenerateToken(found);
 
         _logger.LogInformation("User login successfull. CorrelationId: {CorrelationId}", correlationId);
         return new LoginResponseDTO
@@ -94,13 +94,14 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
         };
     }
 
-    private string GenerateToken(CreateUserRequestDTO userRequestDTO)
+    private string GenerateToken(User user)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, userRequestDTO.Username),
-            new Claim(ClaimTypes.Email, userRequestDTO.Email),
-            new Claim(ClaimTypes.Role, userRequestDTO.Role.ToString())
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(

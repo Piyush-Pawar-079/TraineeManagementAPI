@@ -8,7 +8,7 @@ public class SubmissionFile
     public string ContentType { get; set; } = "";
     public long Size { get; set; }
     public string CheckSum { get; set; } = "";
-    public string OwnerName { get; set; } = "";
+    public int UploadedByUserId { get; set; } 
     public int SubmissionId { get; set; }
     public Submission Submission { get; set; } = null!;
     public DateTime CreatedAt { get; set; }

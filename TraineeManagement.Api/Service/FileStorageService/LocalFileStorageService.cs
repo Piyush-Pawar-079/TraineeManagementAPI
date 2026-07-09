@@ -8,6 +8,8 @@ using TraineeManagement.Api.Repositories.SubmissionFileRepository;
 using TraineeManagement.Api.Service.PublisherService;
 using TraineeManagement.Api.Service.ProcessingJobService;
 using TraineeManagement.Api.Service.CorrelationIdService;
+using CommonLibrary.Constants;
+using System.Security.Claims;
 
 namespace TraineeManagement.Api.Service.FileStorageService;
 
@@ -20,17 +22,18 @@ public class LocalFileStorageService : IFileStorageService
     private readonly IMapper _mapper;
     private readonly string correlationId;
     private readonly RabbitMqSubmissionPublisher _publisher;
-    private readonly string[] allowedExtensions = [".jpg", ".png", ".pdf", ".txt"];
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IProcessingJobService jobService, ICorrelationIdAccessor correlationIdAccessor)
+    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IProcessingJobService jobService, ICorrelationIdAccessor correlationIdAccessor, IHttpContextAccessor httpContextAccessor)
     {
         _repo = repo;
         _logger = logger;
-        _uploadPath = "../CommonLibrary/uploads";
+        _uploadPath = AppConstant.FileUploadPath;
         _mapper = mapper;
         correlationId = correlationIdAccessor.GetCorrelationId();
         _publisher = publisher;
         _jobService = jobService;
+        _httpContextAccessor = httpContextAccessor;
 
         if (!Directory.Exists(_uploadPath))
         {
@@ -45,7 +48,7 @@ public class LocalFileStorageService : IFileStorageService
             _logger.LogError("File upload failed. CorrelationId: {CorrelationId}", correlationId);
             throw new ArgumentException("No file selected to upload");
         }
-        if (createDTO.File.Length > 5 * 1024 * 1024)
+        if (createDTO.File.Length > AppConstant.AllowedFileSize)
         {
             _logger.LogError("File upload failed, file is too large");
             throw new BadRequestException("File too large. Max 5 MB allowed.");
@@ -53,7 +56,7 @@ public class LocalFileStorageService : IFileStorageService
 
         var extention = Path.GetExtension(createDTO.File.FileName).ToLowerInvariant();
 
-        if (string.IsNullOrEmpty(extention) || !allowedExtensions.Contains(extention))
+        if (string.IsNullOrEmpty(extention) || !AppConstant.AllowedFileExtensions.Contains(extention))
         {
             _logger.LogError("File upload failed because of invalid file extention. CorrelationId: {CorrelationId}", correlationId);
             throw new BadRequestException("Invalid File type.");
@@ -65,6 +68,8 @@ public class LocalFileStorageService : IFileStorageService
         using var stream = new FileStream(filePath, FileMode.Create);
         await createDTO.File.CopyToAsync(stream, cancellationToken);
 
+        int userId = int.Parse(_httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+
         var submissionFile = new SubmissionFile
         {
             OriginalFileName = createDTO.File.FileName,
@@ -72,7 +77,7 @@ public class LocalFileStorageService : IFileStorageService
             ContentType = createDTO.File.ContentType,
             Size = createDTO.File.Length,
             CheckSum = GenerateFileChecksum(filePath),
-            OwnerName = "Piyush",
+            UploadedByUserId = userId, 
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             SubmissionId = submissionId
