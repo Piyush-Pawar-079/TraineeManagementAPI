@@ -10,15 +10,18 @@ using TraineeManagement.Api.Exceptions;
 using CommonLibrary.Models;
 using TraineeManagement.Api.Repositories.UserRepository;
 using TraineeManagement.Api.Service.CorrelationIdService;
+using Microsoft.Extensions.Options;
+using CommonLibrary.Configurations;
 
 namespace TraineeManagement.Api.Service.AuthService;
 
-public class AuthService(IUserRepository repository, IConfiguration configuration, IMapper mapper, ILogger<AuthService> logger, ICorrelationIdAccessor correlationIdAccessor) : IAuthService
+public class AuthService(IUserRepository repository, IMapper mapper, ILogger<AuthService> logger, ICorrelationIdAccessor correlationIdAccessor, IOptions<JwtConfig> options) : IAuthService
 {
     private readonly IUserRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<AuthService> _logger = logger;
     private readonly string correlationId = correlationIdAccessor.GetCorrelationId();
+    private readonly JwtConfig jwtConfig = options.Value;
 
     public async Task<UserResponseDTO?> Register(CreateUserRequestDTO createUserRequestDTO)
     {
@@ -28,7 +31,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
 
         if (foundUser != null)
         {
-            _logger.LogError("User registration failed. User with the same Username already exists. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("User registration failed. User with the same Username already exists. CorrelationId: {CorrelationId}", correlationId);
             throw new BadRequestException("User with the same username already exists");
         }
 
@@ -61,7 +64,7 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
 
         if (found == null)
         {
-            _logger.LogError("User login failed. User with this Username not found. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("User login failed. User with this Username not found. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"User with the username {loginDTO.Username} not found");
         }
 
@@ -105,14 +108,14 @@ public class AuthService(IUserRepository repository, IConfiguration configuratio
         };
 
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("Key")!)
+            Encoding.UTF8.GetBytes(jwtConfig.Key)
         );
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
         var tokenDescriptor = new JwtSecurityToken(
-            issuer: configuration.GetValue<string>("Token:Issuer"),
-            audience: configuration.GetValue<string>("Token:Audience"),
+            issuer: jwtConfig.Issuer,
+            audience: jwtConfig.Audience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(60),
             signingCredentials: creds

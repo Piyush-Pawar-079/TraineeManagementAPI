@@ -27,7 +27,7 @@ public class ExceptionMiddleware(RequestDelegate next,
     {
         var traceId = context.TraceIdentifier;
 
-        _logger.LogError(ex, "Unhandled Exception Occurred | TraceId: {TraceId}", traceId);
+        _logger.LogDebug(ex, "Unhandled Exception Occurred | TraceId: {TraceId}", traceId);
 
         context.Response.ContentType = "application/json";
 

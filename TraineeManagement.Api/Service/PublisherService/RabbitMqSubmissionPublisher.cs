@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using CommonLibrary.Contract;
 using TraineeManagement.Api.Service.CorrelationIdService;
+using Microsoft.Extensions.Options;
+using CommonLibrary.Configurations;
 
 namespace TraineeManagement.Api.Service.PublisherService;
 
@@ -13,19 +15,21 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
     private IChannel _channel = null!;
     private readonly ILogger<RabbitMqSubmissionPublisher> _logger;
     private readonly string correlationId;
+    private readonly RabbitMqConfig rabbitMqConfig;
 
-    public RabbitMqSubmissionPublisher(ILogger<RabbitMqSubmissionPublisher> logger, ICorrelationIdAccessor correlationIdAccessor)
+    public RabbitMqSubmissionPublisher(ILogger<RabbitMqSubmissionPublisher> logger, ICorrelationIdAccessor correlationIdAccessor, IOptions<RabbitMqConfig> options)
     {
         _logger = logger;
         correlationId = correlationIdAccessor.GetCorrelationId();
+        rabbitMqConfig = options.Value;
 
         _factory = new ConnectionFactory
         {
-            HostName = Environment.GetEnvironmentVariable("RabbitMQ_Host")!,
-            Port = int.Parse(Environment.GetEnvironmentVariable("RabbitMQ_Port")!),
-            VirtualHost = Environment.GetEnvironmentVariable("RabbitMQ_VHost")!,
-            UserName = Environment.GetEnvironmentVariable("RabbitMQ_UserName")!,
-            Password = Environment.GetEnvironmentVariable("RabbitMQ_Password")!
+            HostName = rabbitMqConfig.HostName,
+            Port = rabbitMqConfig.Port,
+            VirtualHost = rabbitMqConfig.VirtualHost,
+            UserName = rabbitMqConfig.UserName,
+            Password = rabbitMqConfig.Password
         };
     }
 
@@ -35,22 +39,22 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
         _channel = await _connection.CreateChannelAsync();
 
         // Declare main queue and dead-letter exchange/queue relationships
-        await _channel.ExchangeDeclareAsync("submission-exchange", ExchangeType.Direct, durable: true);
-        await _channel.ExchangeDeclareAsync("submission-dlx", ExchangeType.Direct, durable: true);
+        await _channel.ExchangeDeclareAsync(rabbitMqConfig.SubmissionQueueExchange, ExchangeType.Direct, durable: true);
+        await _channel.ExchangeDeclareAsync(rabbitMqConfig.DlxName, ExchangeType.Direct, durable: true);
 
         IDictionary<string, object?> queueArguments = new Dictionary<string, object?>
         {
-            { "x-dead-letter-exchange", "submission-dlx" },
-            { "x-dead-letter-routing-key", "failed" }
+            { "x-dead-letter-exchange", rabbitMqConfig.DlxName },
+            { "x-dead-letter-routing-key", rabbitMqConfig.RoutingKeyDlx }
         };
 
-        string QueueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName") ?? "submission-processor";
+        string QueueName = rabbitMqConfig.SubmissionQueue;
 
         await _channel.QueueDeclareAsync(QueueName, durable: true, exclusive: false, autoDelete: false, arguments: queueArguments);
         await _channel.QueueDeclareAsync($"{QueueName}-failed", durable: true, exclusive: false, autoDelete: false);
 
-        await _channel.QueueBindAsync(QueueName, "submission-exchange", "requested");
-        await _channel.QueueBindAsync($"{QueueName}-failed", "submission-dlx", "failed");
+        await _channel.QueueBindAsync(QueueName, rabbitMqConfig.SubmissionQueueExchange, rabbitMqConfig.SubmissionRoutingKey);
+        await _channel.QueueBindAsync($"{QueueName}-failed", rabbitMqConfig.DlxName, rabbitMqConfig.SubmissionRoutingKey);
 
         _logger.LogInformation("Queue, exchange and routes created successfully. CorrelationId: {CorrelationId}", correlationId);
     }
@@ -60,7 +64,10 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
         try
         {
 
-            await Setup();
+            if (_channel == null)
+            {
+                await Setup();
+            }
 
             var json = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(json);
@@ -73,8 +80,8 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
             };
 
             await _channel.BasicPublishAsync(
-                exchange: "submission-exchange",
-                routingKey: "requested",
+                exchange: rabbitMqConfig.SubmissionQueueExchange,
+                routingKey: rabbitMqConfig.SubmissionRoutingKey,
                 mandatory: true,
                 basicProperties: properties,
                 body: body
@@ -88,7 +95,7 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Broker unavailable. Failed to publish message: {MessageId}. CorrelationId: {CorrelationId}", message.MessageId, message.CorrelationId);
+            _logger.LogDebug(ex, "Broker unavailable. Failed to publish message: {MessageId}. CorrelationId: {CorrelationId}", message.MessageId, message.CorrelationId);
             return false;
         }
     }

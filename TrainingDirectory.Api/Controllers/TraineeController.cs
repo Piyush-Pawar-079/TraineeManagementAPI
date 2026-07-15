@@ -20,7 +20,7 @@ namespace TrainingDirectory.Api.Controllers
 
             if (trainee == null)
             {
-                _logger.LogError("Trainee not found. CorrelationId: {CorrelationId}", correlationId);
+                _logger.LogDebug("Trainee not found. CorrelationId: {CorrelationId}", correlationId);
                 return NotFound();
             }
 

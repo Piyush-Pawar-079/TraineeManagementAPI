@@ -21,7 +21,7 @@ public class RedisService(IDistributedCache db, ILogger<RedisService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError("Something went wrong while retrieveing data from the cache for the key - " + key + ex);
+            _logger.LogDebug("Something went wrong while retrieveing data from the cache for the key - " + key + ex);
             return default;
         }
     }
@@ -34,7 +34,7 @@ public class RedisService(IDistributedCache db, ILogger<RedisService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError("Something went wrong while removing data from the cache for the key - " + key + ex);
+            _logger.LogDebug("Something went wrong while removing data from the cache for the key - " + key + ex);
         }
     }
 
@@ -51,7 +51,7 @@ public class RedisService(IDistributedCache db, ILogger<RedisService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError("Something went wrong while saving data from the cache for the key - " + key + ex);
+            _logger.LogDebug("Something went wrong while saving data from the cache for the key - " + key + ex);
         }
     }
 

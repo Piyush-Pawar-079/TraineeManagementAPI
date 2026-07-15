@@ -39,12 +39,12 @@ namespace SubmissionProcessor.Worker.Clients
             }
             catch (TaskCanceledException)
             {
-                _logger.LogError("Request timed out");
+                _logger.LogDebug("Request timed out");
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calling TrainingDirectory service");
+                _logger.LogDebug(ex, "Error calling TrainingDirectory service");
                 return null;
             }
         }
@@ -70,12 +70,12 @@ namespace SubmissionProcessor.Worker.Clients
             }
             catch (TaskCanceledException)
             {
-                _logger.LogError("Request timed out");
+                _logger.LogDebug("Request timed out");
                 return new List<TraineeProfileResponseDto>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calling TrainingDirectory service");
+                _logger.LogDebug(ex, "Error calling TrainingDirectory service");
                 return new List<TraineeProfileResponseDto>();
             }
         }

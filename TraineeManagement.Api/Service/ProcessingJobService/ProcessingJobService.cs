@@ -23,7 +23,7 @@ public class ProcessingJobService(IProcessingJobRepository repo, ILogger<Process
 
         if (job == null)
         {
-            _logger.LogError($"Processing Job with the specified Id - {id} is not available. CorrelationId: {correlationId}");
+            _logger.LogDebug($"Processing Job with the specified Id - {id} is not available. CorrelationId: {correlationId}");
             throw new NotFoundException($"Processing Job with the specified Id - {id} is not available");
         }
 

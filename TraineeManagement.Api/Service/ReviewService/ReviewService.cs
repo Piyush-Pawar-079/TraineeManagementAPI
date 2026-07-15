@@ -25,7 +25,7 @@ public class ReviewService(IReviewRepository repository, ILogger<ReviewService> 
         var desiredReview = await _repo.GetReviewByIdAsync(id);
         if (desiredReview == null)
         {
-            _logger.LogError("Review with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Review with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Review with the id - {id} not found");
         }
         return _mapper.Map<ReviewDetailDTO>(desiredReview);
@@ -50,7 +50,7 @@ public class ReviewService(IReviewRepository repository, ILogger<ReviewService> 
 
         if (CreatedReview == null)
         {
-            _logger.LogError("Something went wrong while creating a new Review. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while creating a new Review. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while creating a new Review");
         }
         return _mapper.Map<ReviewDetailDTO>(CreatedReview);

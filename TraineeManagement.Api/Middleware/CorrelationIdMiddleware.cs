@@ -1,36 +1,30 @@
+using CommonLibrary.Constants;
+
 namespace TraineeManagement.Api.Middleware;
 
-public class CorrelationIdMiddleware
+public class CorrelationIdMiddleware(RequestDelegate next, ILogger<CorrelationIdMiddleware> logger)
 {
-    private const string CorrelationHeader = "X-Correlation-ID";
-    private readonly RequestDelegate _next;
-    private readonly ILogger<CorrelationIdMiddleware> _logger;
-
-    public CorrelationIdMiddleware(RequestDelegate next, ILogger<CorrelationIdMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    
 
     public async Task InvokeAsync(HttpContext context)
     {
         // Get or create correlation ID
-        if (!context.Request.Headers.TryGetValue(CorrelationHeader, out var correlationId))
+        if (!context.Request.Headers.TryGetValue(AppConstant.CorrelationHeader, out var correlationId))
         {
             correlationId = Guid.NewGuid().ToString();
-            context.Request.Headers[CorrelationHeader] = correlationId;
+            context.Request.Headers[AppConstant.CorrelationHeader] = correlationId;
         }
 
         // Add to response headers
-        context.Response.Headers[CorrelationHeader] = correlationId;
+        context.Response.Headers[AppConstant.CorrelationHeader] = correlationId;
 
         // Store in HttpContext for later use
-        context.Items[CorrelationHeader] = correlationId;
+        context.Items[AppConstant.CorrelationHeader] = correlationId;
 
         // Create a logging scope so all logs automatically include the correlation ID
-        using (_logger.BeginScope("{CorrelationId}", correlationId!))
+        using (logger.BeginScope("{CorrelationId}", correlationId!))
         {
-            await _next(context);
+            await next(context);
         }
     }
 }

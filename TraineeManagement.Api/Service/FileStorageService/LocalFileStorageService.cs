@@ -21,10 +21,10 @@ public class LocalFileStorageService : IFileStorageService
     private readonly IProcessingJobService _jobService;
     private readonly IMapper _mapper;
     private readonly string correlationId;
-    private readonly RabbitMqSubmissionPublisher _publisher;
+    private readonly IRabbitMqPublisher _publisher;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public LocalFileStorageService(RabbitMqSubmissionPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IProcessingJobService jobService, ICorrelationIdAccessor correlationIdAccessor, IHttpContextAccessor httpContextAccessor)
+    public LocalFileStorageService(IRabbitMqPublisher publisher, ISubmissionFileRepository repo, ILogger<LocalFileStorageService> logger, IMapper mapper, IProcessingJobService jobService, ICorrelationIdAccessor correlationIdAccessor, IHttpContextAccessor httpContextAccessor)
     {
         _repo = repo;
         _logger = logger;
@@ -45,12 +45,12 @@ public class LocalFileStorageService : IFileStorageService
     {
         if (createDTO.File == null || createDTO.File.Length == 0)
         {
-            _logger.LogError("File upload failed. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("File upload failed. CorrelationId: {CorrelationId}", correlationId);
             throw new ArgumentException("No file selected to upload");
         }
         if (createDTO.File.Length > AppConstant.AllowedFileSize)
         {
-            _logger.LogError("File upload failed, file is too large");
+            _logger.LogDebug("File upload failed, file is too large");
             throw new BadRequestException("File too large. Max 5 MB allowed.");
         }
 
@@ -58,7 +58,7 @@ public class LocalFileStorageService : IFileStorageService
 
         if (string.IsNullOrEmpty(extention) || !AppConstant.AllowedFileExtensions.Contains(extention))
         {
-            _logger.LogError("File upload failed because of invalid file extention. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("File upload failed because of invalid file extention. CorrelationId: {CorrelationId}", correlationId);
             throw new BadRequestException("Invalid File type.");
         }
 
@@ -77,7 +77,7 @@ public class LocalFileStorageService : IFileStorageService
             ContentType = createDTO.File.ContentType,
             Size = createDTO.File.Length,
             CheckSum = GenerateFileChecksum(filePath),
-            UploadedByUserId = userId, 
+            UploadedByUserId = userId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             SubmissionId = submissionId
@@ -87,7 +87,7 @@ public class LocalFileStorageService : IFileStorageService
 
         if (result == null)
         {
-            _logger.LogError("Something went wrong while saving the file to the database. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while saving the file to the database. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while saving the file to the database");
         }
         _logger.LogInformation("File saved successfully. CorrelationId: {CorrelationId}", correlationId);
@@ -115,7 +115,17 @@ public class LocalFileStorageService : IFileStorageService
 
         if (!isQueued)
         {
-            _logger.LogInformation(503, "Database updated, but processing queue is currently unavailable. Retry later. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogInformation(503, "Database updated, message not published to the queue. Retrying message publishing. CorrelationId: {CorrelationId}", correlationId);
+
+            var retry = await _jobService.RetryJobAsync(job.Id);
+
+            if (retry == null)
+            {
+                _logger.LogInformation(503, "Message not published to the queue. CorrelationId: {CorrelationId}", correlationId);
+                throw new Exception("Message not published to the queue, deleting meta data from the database, please retry again later.");
+            }
+
+            _logger.LogInformation("Message added to the processing queue. CorrelationId: {CorrelationId}", correlationId);
         }
         else
             _logger.LogInformation("Message added to the processing queue. CorrelationId: {CorrelationId}", correlationId);
@@ -132,7 +142,7 @@ public class LocalFileStorageService : IFileStorageService
         // Console.Write("THis is the file: " + file.Id);
         if (file == null)
         {
-            _logger.LogError($"File with the specified id - {id} not found. CorrelationId: {correlationId}");
+            _logger.LogDebug($"File with the specified id - {id} not found. CorrelationId: {correlationId}");
             throw new NotFoundException($"File with the specified id - {id} not found");
         }
 
@@ -140,7 +150,7 @@ public class LocalFileStorageService : IFileStorageService
 
         if (!File.Exists(filePath))
         {
-            _logger.LogError("File is not available at the specified path. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("File is not available at the specified path. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException("File not found");
         }
 
@@ -171,7 +181,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _repo.GetSubmissionFileById(id) == null;
+        return await _repo.GetSubmissionFileById(id) != null;
     }
     public async Task DeleteAsync(int id)
     {
@@ -179,7 +189,7 @@ public class LocalFileStorageService : IFileStorageService
 
         if (submissionFile == null)
         {
-            _logger.LogError($"File with the specified id - {id} not found. CorrelationId: {correlationId}");
+            _logger.LogDebug($"File with the specified id - {id} not found. CorrelationId: {correlationId}");
             throw new NotFoundException($"File with the specified id - {id} not found");
         }
 
@@ -187,7 +197,7 @@ public class LocalFileStorageService : IFileStorageService
 
         if (!File.Exists(filePath))
         {
-            _logger.LogError("File not found while deleting. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("File not found while deleting. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException("File not found.");
         }
 

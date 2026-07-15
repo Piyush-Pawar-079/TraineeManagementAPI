@@ -4,7 +4,7 @@ namespace TraineeManagement.Api.DTO.AuthDTOs;
 
 public class LoginResponseDTO
 {
-    public required String Token { set; get; } = String.Empty;
+    public required string Token { set; get; } = "";
 
     public DateTime ExpiresIn { set; get; }
 

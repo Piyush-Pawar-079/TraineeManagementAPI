@@ -1,55 +1,51 @@
 using System.Text;
 using System.Text.Json;
+using CommonLibrary.Configurations;
 using CommonLibrary.Contract;
 using CommonLibrary.Data;
 using CommonLibrary.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
- 
+
 namespace SubmissionProcessor.Worker;
- 
-public class SubmissionConsumerWorker : BackgroundService
+
+public class SubmissionConsumerWorker(ILogger<SubmissionConsumerWorker> logger,
+IServiceScopeFactory scopeFactory, IOptions<RabbitMqConfig> options) : BackgroundService
 {
-    private readonly ILogger<SubmissionConsumerWorker> _logger;
-    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SubmissionConsumerWorker> _logger = logger;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private IConnection? _connection;
     private IChannel? _channel;
-    private readonly string QueueName = Environment.GetEnvironmentVariable("RabbitMQ_QueueName") ?? "submission-processor";
- 
-    public SubmissionConsumerWorker(ILogger<SubmissionConsumerWorker> logger,
-    IServiceScopeFactory scopeFactory)
-    {
-        _logger = logger;
-        _scopeFactory=scopeFactory;
-    }
- 
+    private readonly RabbitMqConfig rabbitMqConfig = options.Value;
+
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         var factory = new ConnectionFactory
         {
-            HostName = Environment.GetEnvironmentVariable("RabbitMQ_Host")!,
-            Port = int.Parse(Environment.GetEnvironmentVariable("RabbitMQ_Port")!),
-            VirtualHost = Environment.GetEnvironmentVariable("RabbitMQ_VHost")!,
-            UserName = Environment.GetEnvironmentVariable("RabbitMQ_UserName")!,
-            Password = Environment.GetEnvironmentVariable("RabbitMQ_Password")!
+            HostName = rabbitMqConfig.HostName,
+            Port = rabbitMqConfig.Port,
+            VirtualHost = rabbitMqConfig.VirtualHost,
+            UserName = rabbitMqConfig.UserName,
+            Password = rabbitMqConfig.Password
         };
- 
+
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
- 
-        //DEAD LETTER QUEUE
-        string dlxName = "submission-dlx";
-        string dlqName = QueueName + "-failed";
 
- 
+        //DEAD LETTER QUEUE
+        string dlxName = rabbitMqConfig.DlxName;
+        string dlqName = rabbitMqConfig.SubmissionQueue + "-failed";
+
+
         await _channel.ExchangeDeclareAsync(
             exchange: dlxName,
             type: ExchangeType.Direct,
             durable: true,
             cancellationToken: cancellationToken
         );
- 
+
         await _channel.QueueDeclareAsync(
             queue: dlqName,
             durable: true,
@@ -57,45 +53,45 @@ public class SubmissionConsumerWorker : BackgroundService
             autoDelete: false,
             cancellationToken: cancellationToken
         );
- 
+
         await _channel.QueueBindAsync(
             queue: dlqName,
             exchange: dlxName,
-            routingKey: "failed",
+            routingKey: rabbitMqConfig.RoutingKeyDlx,
             cancellationToken: cancellationToken
         );
         var mainQueueArguments = new Dictionary<string, object?>
         {
             { "x-dead-letter-exchange", dlxName },
-            { "x-dead-letter-routing-key", "failed" }
+            { "x-dead-letter-routing-key", rabbitMqConfig.RoutingKeyDlx }
         };
-       
+
         await _channel.QueueDeclareAsync(
-            queue: QueueName,
+            queue: rabbitMqConfig.SubmissionQueue,
             durable: true,
             exclusive: false,
             autoDelete: false,
             arguments: mainQueueArguments,
             cancellationToken: cancellationToken
         );
-       
+
         await _channel.BasicQosAsync(
             prefetchSize: 0,
             prefetchCount: 1,
             global: false,
             cancellationToken: cancellationToken
         );
- 
+
         await base.StartAsync(cancellationToken);
     }
- 
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (_channel == null)
         {
             throw new InvalidOperationException("RabbitMQ channel is not initialized");
         }
-       
+
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.ReceivedAsync += async (_, ea) =>
         {
@@ -114,29 +110,29 @@ public class SubmissionConsumerWorker : BackgroundService
                     );
                     return;
                 }
- 
+
                 //IDEMPOTENCY DONE HERE
                 using (var scope = _scopeFactory.CreateScope())
                 {
-                    var _context=scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
-                    var existingJob=await _context.ProcessingJobs.FirstOrDefaultAsync(x=>x.CorrelationId==message.CorrelationId);
- 
-                    if(existingJob!=null && existingJob.Status==JobStatus.Completed)
+                    var _context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+                    var existingJob = await _context.ProcessingJobs.FirstOrDefaultAsync(x => x.CorrelationId == message.CorrelationId);
+
+                    if (existingJob != null && existingJob.Status == JobStatus.Completed)
                     {
                         _logger.LogInformation("Duplicate message by RabbitMQ ignored");
-                        await _channel.BasicAckAsync(ea.DeliveryTag,false,stoppingToken);
+                        await _channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
                         return;
                     }
                     _logger.LogInformation("Received message. MessageId:{MessageId}, CorrelationId:{CorrelationId}, SubmissionId:{SubmissionId}",
                         message.MessageId, message.CorrelationId, message.SubmissionId);
-                   
+
                     if (existingJob == null)
                     {
                         existingJob = new ProcessingJob
                         {
-                            CorrelationId=message.CorrelationId,
-                            SubmissionId=message.SubmissionId,
-                            FileId=int.Parse(message.FileId),
+                            CorrelationId = message.CorrelationId,
+                            SubmissionId = message.SubmissionId,
+                            FileId = int.Parse(message.FileId),
                             Status = JobStatus.Processing,
                             Attempts = 0,
                             StartedAt = DateTime.Now
@@ -144,26 +140,26 @@ public class SubmissionConsumerWorker : BackgroundService
                         _context.ProcessingJobs.Add(existingJob);
                         await _context.SaveChangesAsync(stoppingToken);
                     }
-                    else if(existingJob.Status==JobStatus.Queued)
+                    else if (existingJob.Status == JobStatus.Queued)
                     {
-                        existingJob.Status=JobStatus.Processing;
-                        existingJob.StartedAt=DateTime.Now;
+                        existingJob.Status = JobStatus.Processing;
+                        existingJob.StartedAt = DateTime.Now;
                         _logger.LogInformation($"Processing of Job {existingJob.Id} for message {message.MessageId} has started.");
                     }
- 
+
                     //SIMULATING THE PROCESSING
                     try
                     {
-                        var metadata=await _context.SubmissionFiles.FindAsync(message.FileId);
+                        var metadata = await _context.SubmissionFiles.FindAsync(int.Parse(message.FileId));
                         // throw new Exception("Simulated transient failure for retry testing");
                         if (metadata != null)
                         {
                             _logger.LogInformation("Metadata of the File is: ID: {FileId}, Name: {FileName}, ContentType: {ContentType}, Checksum: {Checksum}",
                                 metadata.Id, metadata.OriginalFileName, metadata.ContentType, metadata.CheckSum);
-                           
+
                             // _logger.LogInformation("Fetching trainee profile from directory for TraineeId: {TraineeId}", 123);
                             // var directoryClient = scope.ServiceProvider.GetRequiredService<ITrainingDirectoryClient>();
- 
+
                             // DirectoryTraineeProfileResponse? traineeProfile = null;
                             // try
                             // {
@@ -185,8 +181,8 @@ public class SubmissionConsumerWorker : BackgroundService
                             //         ProfileNote = "Populated via local worker fallback policy because directory was unreachable."
                             //     };
                             // }
- 
- 
+
+
                             // _logger.LogInformation(
                             //         "Successfully retrieved profile for {FullName}. Details - Email: {Email}, TechStack: {TechStack}, Status: {Status}",
                             //         traineeProfile.FullName,
@@ -194,8 +190,8 @@ public class SubmissionConsumerWorker : BackgroundService
                             //         traineeProfile.TechStack,
                             //         traineeProfile.Status
                             //     );
- 
-                            existingJob.Status=JobStatus.Completed;
+
+                            existingJob.Status = JobStatus.Completed;
                             existingJob.CompletedAt = DateTime.Now;
                             existingJob.Attempts++;
                             _logger.LogInformation($"Processing of Job {existingJob.Id} for message {message.MessageId} has completed.");
@@ -206,23 +202,23 @@ public class SubmissionConsumerWorker : BackgroundService
                             _logger.LogWarning("Metadata file not found for FileId: {FileId}", message.FileId);
                             throw new FileNotFoundException($"Metadata file not found for FileId: {message.FileId}");
                         }
-                       
+
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Business processing logic failed for MessageId {MessageId}", message.MessageId);
+                        _logger.LogDebug(ex, "Business processing logic failed for MessageId {MessageId}", message.MessageId);
                         existingJob.ErrorSummary = ex.Message;
                         bool isPermanentFailure = ex is FileNotFoundException;
                         bool isRetryExhausted = existingJob.Attempts >= 3;
-                        if(isPermanentFailure || isRetryExhausted)
+                        if (isPermanentFailure || isRetryExhausted)
                         {
                             existingJob.Status = JobStatus.Failed;
-                            _logger.LogError("Processing failed for the Job: {JobId}", existingJob.Id);
+                            _logger.LogDebug("Processing failed for the Job: {JobId}", existingJob.Id);
                             await _context.SaveChangesAsync();
                             await _channel.BasicNackAsync(
                                 deliveryTag: ea.DeliveryTag,
                                 multiple: false,
-                                requeue:false,
+                                requeue: false,
                                 cancellationToken: stoppingToken
                             );
                         }
@@ -231,7 +227,7 @@ public class SubmissionConsumerWorker : BackgroundService
                             existingJob.Status = JobStatus.Queued;
                             existingJob.Attempts++;
                             await _context.SaveChangesAsync();
-                            _logger.LogInformation("Retrying the Job: {JobId}, Current Attempt:{Attempts}", existingJob.Id,existingJob.Attempts);
+                            _logger.LogInformation("Retrying the Job: {JobId}, Current Attempt:{Attempts}", existingJob.Id, existingJob.Attempts);
                             await _channel.BasicNackAsync(
                                 deliveryTag: ea.DeliveryTag,
                                 multiple: false,
@@ -240,21 +236,21 @@ public class SubmissionConsumerWorker : BackgroundService
                             );
                         }
                         return;
-                    }                    
+                    }
                 }
-               
+
                 await _channel.BasicAckAsync(
                     deliveryTag: ea.DeliveryTag,
                     multiple: false,
                     cancellationToken: stoppingToken
                 );
-               
+
                 _logger.LogInformation("Acknowledged Message {MessageId}", message.MessageId);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error while processing RabbitMQ message");
-                if(_channel!=null)
+                _logger.LogDebug(e, "Error while processing RabbitMQ message");
+                if (_channel != null)
                 {
                     await _channel.BasicNackAsync(
                                 deliveryTag: ea.DeliveryTag,
@@ -265,19 +261,19 @@ public class SubmissionConsumerWorker : BackgroundService
                 }
             }
         };
- 
+
         await _channel.BasicConsumeAsync(
-            queue: QueueName,
+            queue: rabbitMqConfig.SubmissionQueue,
             autoAck: false,
             consumer: consumer,
             cancellationToken: stoppingToken);
-           
+
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(1000, stoppingToken);
         }
     }
- 
+
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         if (_channel != null)
@@ -285,7 +281,7 @@ public class SubmissionConsumerWorker : BackgroundService
             await _channel.CloseAsync(cancellationToken: cancellationToken);
             await _channel.DisposeAsync();
         }
- 
+
         if (_connection != null)
         {
             await _connection.CloseAsync(cancellationToken: cancellationToken);

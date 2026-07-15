@@ -5,6 +5,7 @@ using CommonLibrary.Models;
 using TraineeManagement.Api.Repositories.SubmissionRepository;
 using TraineeManagement.Api.Service.RedisService;
 using TraineeManagement.Api.Service.CorrelationIdService;
+using CommonLibrary.Constants;
 
 namespace TraineeManagement.Api.Service.SubmissionService;
 
@@ -24,13 +25,34 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
 
     public async Task<SubmissionBasicDTO> GetSummary(int id)
     {
+
+        var key = AppConstant.SubmissionSummaryRedisKey(id);
+        var Submission = await _cache.GetAsync<SubmissionBasicDTO>(key);
+
+        if (Submission != null)
+        {
+            _logger.LogInformation("Submission with the specified Id found in redis cache. Cache Hit case. CorrelationId: {CorrelationId}", correlationId);
+            return Submission;
+        }
+
+        _logger.LogDebug("Submission not found in redis cache, fetching from database. Cache Miss case. CorrelationId: {CorrelationId}", correlationId);
+
         var submission = await _repo.GetSubmissionByIdAsync(id);
+
+        if (submission == null)
+        {
+            _logger.LogDebug("Submission with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            throw new NotFoundException($"Submission with the id - {id} not found");
+        }
+
+        await _cache.SetAsync(key, _mapper.Map<SubmissionDetailDTO>(submission));
+
         return _mapper.Map<SubmissionBasicDTO>(submission);
     }
 
     public async Task<SubmissionDetailDTO?> GetByIdAsync(int id)
     {
-        var key = $"Submission:{id}";
+        var key = AppConstant.SubmissionRedisKey(id);
         var Submission = await _cache.GetAsync<SubmissionDetailDTO>(key);
 
         if (Submission != null)
@@ -39,13 +61,13 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
             return Submission;
         }
 
-        _logger.LogError("Submission not found in redis cache, fetching from database. Cache Miss case. CorrelationId: {CorrelationId}", correlationId);
+        // _logger.LogDebug("Submission not found in redis cache, fetching from database. Cache Miss case. CorrelationId: {CorrelationId}", correlationId);
 
         var dbSubmission = await _repo.GetSubmissionByIdAsync(id);
 
         if (dbSubmission == null)
         {
-            _logger.LogError("Submission with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            // _logger.LogDebug("Submission with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Submission with the id - {id} not found");
         }
 
@@ -72,7 +94,7 @@ public class SubmissionService(ISubmissionRepository repository, ILogger<Submiss
 
         if (CreatedSubmission == null)
         {
-            _logger.LogError("Something went wrong while creating a new Submission. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while creating a new Submission. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while creating a new Submission.");
         }
 

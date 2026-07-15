@@ -7,6 +7,7 @@ using TraineeManagement.Api.Exceptions;
 using AutoMapper;
 using TraineeManagement.Api.Service.RedisService;
 using TraineeManagement.Api.Service.CorrelationIdService;
+using CommonLibrary.Constants;
 
 namespace TraineeManagement.Api.Service.TraineeService;
 
@@ -39,22 +40,21 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
     public async Task<TraineeDetailDTO?> GetTraineeById(int id)
     {
 
-        var key = $"Trainee:{id}";
+        var key = AppConstant.TraineeRedisKey(id);
         var trainee = await _cache.GetAsync<TraineeDetailDTO>(key);
-        Console.WriteLine(trainee + "This is the trainee from the redis cache");
         if (trainee != null)
         {
             _logger.LogInformation("Trainee with the specified Id found in redis cache. Cache hit case. CorrelationId: {CorrelationId}", correlationId);
             return trainee;
         }
 
-        _logger.LogError("Trainee not found in redis cache, fetching from database. Cache miss case. CorrelationId: {CorrelationId}", correlationId);
+        // _logger.LogDebug("Trainee not found in redis cache, fetching from database. Cache miss case. CorrelationId: {CorrelationId}", correlationId);
 
         var dbTrainee = await _repository.GetByIdAsync(id);
 
         if (dbTrainee == null)
         {
-            _logger.LogError("Trainee with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Trainee with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
@@ -66,7 +66,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<TraineeDetailDTO?> UpdateTrainee(int id, UpdateTraineeRequestDTO updateDto)
     {
-        var key = $"Trainee:{id}";
+        var key = AppConstant.TraineeRedisKey(id);
         _logger.LogInformation("Trainee cache invalidation while updating. CorrelationId: {CorrelationId}", correlationId);
         await _cache.RemoveAsync(key);
 
@@ -74,7 +74,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (existingTrainee == null)
         {
-            _logger.LogError("Trainee with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Trainee with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Trainee with the id - {id} not found");
         }
 
@@ -99,7 +99,7 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
         if (desiredTrainee == null)
         {
-            _logger.LogError("Something went wrong while updating a new Trainee. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while updating a new Trainee. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Trainee");
         }
 
@@ -131,7 +131,8 @@ public class TraineeService(ITraineeRepository repository, ILogger<TraineeServic
 
     public async Task<bool> DeleteTrainee(int id)
     {
-        await _cache.RemoveAsync($"Trainee:{id}");
+        var key = AppConstant.TraineeRedisKey(id);
+        await _cache.RemoveAsync(key);
         _logger.LogInformation("Trainee cache invalidation while deleting. CorrelationId: {CorrelationId}", correlationId);
         _logger.LogInformation("Trainee Deleted Successfully. CorrelationId: {CorrelationId}", correlationId);
         return await _repository.DeleteAsync(id);

@@ -37,13 +37,19 @@ using TraineeManagement.Api.Middleware;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RabbitMQ.Client;
+using CommonLibrary.Configurations;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load("../CommonLibrary/.env");
-
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddOpenApi();
+
+// bind custom configurations
+builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection(JwtConfig.SectionName));
+builder.Services.Configure<RedisConfig>(builder.Configuration.GetSection(RedisConfig.SectionName));
+builder.Services.Configure<RabbitMqConfig>(builder.Configuration.GetSection(RabbitMqConfig.SectionName));
 
 builder.Services.AddCors(options =>
 {
@@ -65,13 +71,23 @@ builder.Services.AddControllers()
       );
    });
 
+RedisConfig redisConfig = builder.Configuration.GetSection(RedisConfig.SectionName).Get<RedisConfig>()!;
+RabbitMqConfig rabbitMqConfig = builder.Configuration.GetSection(RabbitMqConfig.SectionName).Get<RabbitMqConfig>()!;
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+Console.WriteLine(connectionString + "tshi is the ocnnection string");
+JwtConfig jwtConfig = builder.Configuration.GetSection(JwtConfig.SectionName).Get<JwtConfig>()!;
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 builder.Services.AddHealthChecks()
    .AddMySql(
-      connectionString: Environment.GetEnvironmentVariable("DefaultConnection")!,
+      connectionString: connectionString,
       name: "mysql",
       timeout: TimeSpan.FromSeconds(5))
    .AddRedis(
-      redisConnectionString: Environment.GetEnvironmentVariable("RedisConnectionString")!,
+      redisConnectionString: redisConfig.ConnectionString,
       name: "redis",
       timeout: TimeSpan.FromSeconds(5))
    .AddRabbitMQ(
@@ -79,11 +95,11 @@ builder.Services.AddHealthChecks()
       {
          var factory = new ConnectionFactory
          {
-            HostName = Environment.GetEnvironmentVariable("RabbitMQ_Host")!,
-            Port = int.Parse(Environment.GetEnvironmentVariable("RabbitMQ_Port")!),
-            VirtualHost = Environment.GetEnvironmentVariable("RabbitMQ_VHost")!,
-            UserName = Environment.GetEnvironmentVariable("RabbitMQ_UserName")!,
-            Password = Environment.GetEnvironmentVariable("RabbitMQ_Password")!
+            HostName = rabbitMqConfig.HostName,
+            Port = rabbitMqConfig.Port,
+            VirtualHost = rabbitMqConfig.VirtualHost,
+            UserName = rabbitMqConfig.UserName,
+            Password = rabbitMqConfig.Password
          };
          return await factory.CreateConnectionAsync();
       },
@@ -92,31 +108,16 @@ builder.Services.AddHealthChecks()
       timeout: TimeSpan.FromSeconds(5),
       tags: new[] { "mq", "rabbit" }
     )
-    //  .AddUrlGroup(
-    //      uri: new Uri(Environment.GetEnvironmentVariable("Training_Directory_API_Base_URL")! + "/health/ready"), // URL to check
-    //      name: "TraineeDirectory.Api",
-    //      failureStatus: HealthStatus.Unhealthy,
-    //      timeout: TimeSpan.FromSeconds(10)
-    //  )
     ;
-
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 );
 
-var redisConn = Environment.GetEnvironmentVariable("RedisConnectionString");
-
-if (string.IsNullOrWhiteSpace(redisConn))
-{
-   throw new NotFoundException("Redis connection string is missing");
-}
-
 builder.Services.AddStackExchangeRedisCache(
    options =>
    {
-      options.Configuration = redisConn;
+      options.Configuration = redisConfig.ConnectionString;
    }
 );
 
@@ -138,21 +139,18 @@ builder.Services
           ValidateAudience = true,
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = builder.Configuration.GetValue<string>("Token:Issuer"),
-          ValidAudience = builder.Configuration.GetValue<string>("Token:Audience"),
-          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("Key")!)),
+          ValidIssuer = jwtConfig.Issuer,
+          ValidAudience = jwtConfig.Audience,
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Key!)),
           ClockSkew = TimeSpan.Zero,
           RoleClaimType = "Role"
        };
     });
 
-builder.Configuration
-    .AddEnvironmentVariables();
-
 builder.Services.AddOpenApiDocument(config =>
 {
    config.DocumentName = "v1";
-   config.Title = "Training Management api";
+   config.Title = "Training Management API";
 
    config.AddSecurity("JWT", new NSwag.OpenApiSecurityScheme
    {
@@ -200,7 +198,7 @@ builder.Services.AddScoped<ISubmissionFileRepository, SubmissionFileRepository>(
 builder.Services.AddScoped<IRedisService, RedisService>();
 
 builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqSubmissionPublisher>();
-builder.Services.AddScoped<RabbitMqSubmissionPublisher>();
+// builder.Services.AddScoped<RabbitMqSubmissionPublisher>();
 
 builder.Services.AddScoped<IProcessingJobRepository, ProcessingJobRepository>();
 builder.Services.AddScoped<IProcessingJobService, ProcessingJobService>();
@@ -258,11 +256,11 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 });
 
 
-using (var scope = app.Services.CreateScope())
-{
-   var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
-   db.Database.Migrate();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+//    db.Database.Migrate();
+// }
 
 
 app.MapGet("/", () =>

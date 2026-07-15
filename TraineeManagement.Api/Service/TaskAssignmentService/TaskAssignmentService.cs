@@ -5,6 +5,7 @@ using CommonLibrary.Models;
 using TraineeManagement.Api.Repositories.TaskAssignmentRepository;
 using TraineeManagement.Api.Service.RedisService;
 using TraineeManagement.Api.Service.CorrelationIdService;
+using CommonLibrary.Constants;
 
 namespace TraineeManagement.Api.Service.TaskAssignmentService;
 
@@ -24,7 +25,7 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
 
     public async Task<TaskAssignmentDetailDTO?> GetByIdAsync(int id)
     {
-        var key = $"TaskAssignment:{id}";
+        var key = AppConstant.TaskAssignmentRedisKey(id);
         var taskAssignment = await _cache.GetAsync<TaskAssignmentDetailDTO>(key);
 
         if (taskAssignment != null)
@@ -33,13 +34,13 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
             return taskAssignment;
         }
 
-        _logger.LogError("taskAssignment not found in redis cache, fetching from database. Cache miss case. CorrelationId: {CorrelationId}", correlationId);
+        // _logger.LogDebug("taskAssignment not found in redis cache, fetching from database. Cache miss case. CorrelationId: {CorrelationId}", correlationId);
 
         var dbtaskAssignment = await _repo.GetTaskAssignmentByIdAsync(id);
 
         if (dbtaskAssignment == null)
         {
-            _logger.LogError("Task Assignment with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Task Assignment with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Task Assignment with the id - {id} not found");
         }
 
@@ -61,13 +62,14 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
 
     public async Task<TaskAssignmentDetailDTO?> UpdateAsync(int id, UpdateTaskAssignmentRequestDTO updateTaskAssignmentDto)
     {
-        await _cache.RemoveAsync($"TaskAssignment:{id}");
+        var key = AppConstant.TaskAssignmentRedisKey(id);
+        await _cache.RemoveAsync(key);
         _logger.LogInformation("Task Assignment cache invalidation while updating. CorrelationId: {CorrelationId}", correlationId);
         var existingTaskAssignment = await _repo.GetTaskAssignmentByIdAsync(id);
 
         if (existingTaskAssignment == null)
         {
-            _logger.LogError("Task Assignment with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            // _logger.LogDebug("Task Assignment with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Task Assignment with the id - {id} not found");
         }
 
@@ -78,7 +80,7 @@ public class TaskAssignmentService(ITaskAssignmentRepository repository, ILogger
 
         if (desiredTaskAssignment == null)
         {
-            _logger.LogError("Something went wrong while updating a new Task Assignment. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while updating a new Task Assignment. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Task Assignment");
         }
         _logger.LogInformation("Task Assignment Updated Successfully");

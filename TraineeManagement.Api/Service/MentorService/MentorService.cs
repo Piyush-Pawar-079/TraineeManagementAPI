@@ -27,7 +27,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (desiredMentor == null)
         {
-            _logger.LogError("Mentor with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Mentor with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
@@ -64,7 +64,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (existingMentor == null)
         {
-            _logger.LogError("Mentor with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Mentor with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Mentor with the id - {id} not found");
         }
 
@@ -89,7 +89,7 @@ public class MentorService(IMentorRepository repository, ILogger<MentorService> 
 
         if (desiredMentor == null)
         {
-            _logger.LogError("Something went wrong while updating a new Mentor. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while updating a new Mentor. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Mentor");
         }
 

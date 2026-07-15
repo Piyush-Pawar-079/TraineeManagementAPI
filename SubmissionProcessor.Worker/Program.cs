@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using SubmissionProcessor.Worker.Clients;
 using Polly;
 using System.Net;
+using CommonLibrary.Configurations;
 
-var builder = Host.CreateApplicationBuilder(args);
 Env.Load("../CommonLibrary/.env");
-
+var builder = Host.CreateApplicationBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHostedService<SubmissionConsumerWorker>();
-
+builder.Services.Configure<RabbitMqConfig>(builder.Configuration.GetSection(RabbitMqConfig.SectionName));
 builder.Services.AddHttpClient<HttpDirectoryClient>("TrainingDirectory.Api", client =>
    {
-   client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("Training_Directory_API_Base_URL") ?? "http://training_directory_api:8080/");
+   client.BaseAddress = new Uri(builder.Configuration["TraineeDirectoryApi:Url"]!);
    }).ConfigurePrimaryHttpMessageHandler(() =>
     {
         return new SocketsHttpHandler()
@@ -47,7 +48,7 @@ builder.Services.AddHttpClient<HttpDirectoryClient>("TrainingDirectory.Api", cli
 });
 
 
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))

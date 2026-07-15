@@ -27,7 +27,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (desiredLearningTask == null)
         {
-            _logger.LogError("LearningTask with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("LearningTask with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
@@ -64,7 +64,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (existingLearningTask == null)
         {
-            _logger.LogError("LearningTask with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("LearningTask with the specified Id is not available. CorrelationId: {CorrelationId}", correlationId);
             throw new NotFoundException($"Learning Task with the id - {id} not found");
         }
 
@@ -89,7 +89,7 @@ public class LearningTaskService(ILearningTaskRepository repository, ILogger<Lea
 
         if (desiredTrainee == null)
         {
-            _logger.LogError("Something went wrong while updating a new Learning Task. CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogDebug("Something went wrong while updating a new Learning Task. CorrelationId: {CorrelationId}", correlationId);
             throw new Exception("Something went wrong while updating a new Learning Task");
         }
         _logger.LogInformation("Learning Task Updated Successfully. CorrelationId: {CorrelationId}", correlationId);
