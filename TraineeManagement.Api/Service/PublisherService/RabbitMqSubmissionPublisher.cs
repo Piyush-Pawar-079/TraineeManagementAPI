@@ -27,7 +27,7 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
         {
             HostName = rabbitMqConfig.HostName,
             Port = rabbitMqConfig.Port,
-            VirtualHost = rabbitMqConfig.VirtualHost,
+            VirtualHost = rabbitMqConfig.VHost,
             UserName = rabbitMqConfig.UserName,
             Password = rabbitMqConfig.Password
         };
@@ -79,7 +79,7 @@ public class RabbitMqSubmissionPublisher : IRabbitMqPublisher
                 CorrelationId = message.CorrelationId.ToString()
             };
 
-            await _channel.BasicPublishAsync(
+            await _channel!.BasicPublishAsync(
                 exchange: rabbitMqConfig.SubmissionQueueExchange,
                 routingKey: rabbitMqConfig.SubmissionRoutingKey,
                 mandatory: true,

@@ -12,6 +12,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    env_file:
+      - ./CommonLibrary/.env
     environment:
       RABBITMQ_DEFAULT_USER: Admin
       RABBITMQ_DEFAULT_PASS: admin@12345
@@ -30,9 +32,11 @@ services:
     container_name: mysql
     ports:
       - "3307:3306"
+    env_file:
+      - ./CommonLibrary/.env
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: trainee_management_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 10s

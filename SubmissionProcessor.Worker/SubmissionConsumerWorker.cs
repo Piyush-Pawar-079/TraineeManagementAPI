@@ -26,10 +26,12 @@ IServiceScopeFactory scopeFactory, IOptions<RabbitMqConfig> options) : Backgroun
         {
             HostName = rabbitMqConfig.HostName,
             Port = rabbitMqConfig.Port,
-            VirtualHost = rabbitMqConfig.VirtualHost,
+            VirtualHost = rabbitMqConfig.VHost,
             UserName = rabbitMqConfig.UserName,
             Password = rabbitMqConfig.Password
         };
+
+        Console.WriteLine("Creds: " + rabbitMqConfig.HostName + rabbitMqConfig.UserName + rabbitMqConfig.Password);
 
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);

@@ -97,7 +97,7 @@ builder.Services.AddHealthChecks()
          {
             HostName = rabbitMqConfig.HostName,
             Port = rabbitMqConfig.Port,
-            VirtualHost = rabbitMqConfig.VirtualHost,
+            VirtualHost = rabbitMqConfig.VHost,
             UserName = rabbitMqConfig.UserName,
             Password = rabbitMqConfig.Password
          };
@@ -256,11 +256,11 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 });
 
 
-// using (var scope = app.Services.CreateScope())
-// {
-//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
-//    db.Database.Migrate();
-// }
+using (var scope = app.Services.CreateScope())
+{
+   var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+   db.Database.Migrate();
+}
 
 
 app.MapGet("/", () =>
