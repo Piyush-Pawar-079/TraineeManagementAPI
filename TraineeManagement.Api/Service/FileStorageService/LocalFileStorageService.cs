@@ -62,8 +62,8 @@ public class LocalFileStorageService : IFileStorageService
             throw new BadRequestException("Invalid File type.");
         }
 
-        var fileName = $"{Guid.NewGuid()}{createDTO.File.FileName}";
-        var filePath = Path.Combine(_uploadPath, fileName);
+        var generatedFileName = $"{Guid.NewGuid()}{extention}";
+        var filePath = Path.Combine(_uploadPath, generatedFileName);
 
         using var stream = new FileStream(filePath, FileMode.Create);
         await createDTO.File.CopyToAsync(stream, cancellationToken);
@@ -73,7 +73,7 @@ public class LocalFileStorageService : IFileStorageService
         var submissionFile = new SubmissionFile
         {
             OriginalFileName = createDTO.File.FileName,
-            GeneratedFileName = fileName,
+            GeneratedFileName = generatedFileName,
             ContentType = createDTO.File.ContentType,
             Size = createDTO.File.Length,
             CheckSum = GenerateFileChecksum(filePath),
