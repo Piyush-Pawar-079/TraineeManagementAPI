@@ -12,12 +12,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    env_file:
-      - ./CommonLibrary/.env
     environment:
-      RABBITMQ_DEFAULT_USER: Admin
-      RABBITMQ_DEFAULT_PASS: admin@12345
-      RABBITMQ_DEFAULT_VHOST: trainee_management_vhost
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -32,8 +30,6 @@ services:
     container_name: mysql
     ports:
       - "3307:3306"
-    env_file:
-      - ./CommonLibrary/.env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}

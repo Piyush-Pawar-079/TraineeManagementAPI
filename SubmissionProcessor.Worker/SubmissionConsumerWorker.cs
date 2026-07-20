@@ -31,8 +31,6 @@ IServiceScopeFactory scopeFactory, IOptions<RabbitMqConfig> options) : Backgroun
             Password = rabbitMqConfig.Password
         };
 
-        Console.WriteLine("Creds: " + rabbitMqConfig.HostName + rabbitMqConfig.UserName + rabbitMqConfig.Password);
-
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
